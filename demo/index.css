@@ -3,6 +3,7 @@ html {
 }
 
 .is-panel {
+  position: relative;
   background-color: #AAA;
   width: 200px;
   height: 400px;
@@ -12,8 +13,6 @@ html {
 }
 
 .is-content {
-/*  margin: 5px;
-  padding: 5px;*/
   margin: 0;
   padding: 0;
 }
@@ -24,9 +23,24 @@ html {
   border-bottom: solid black 1px;
   box-sizing: border-box;
   overflow: hidden;
+  backface-visibility:hidden;
   -webkit-backface-visibility:hidden;
 }
 
 .is-item:last-child {
   border-bottom: none;
+}
+
+.is-scrim {
+  /*pointer-events: none;*/
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  background-color: red;
+  opacity: 0.25;
+}
+
+.is-highlight {
+  background-color: yellow;
 }

@@ -3,22 +3,22 @@ var React = require('react'),
     PanelItem = require('./panel_item');
 
 function categorizeItems(items, viewportStart, viewportEnd) {
-  var cursor = 0,
-      cats = {
+  var cats = {
         above: [],
         below: [],
-        within: []
+        within: [],
+        height: 0
       };
 
   items.forEach(function(item) {
-    if ((cursor + item.height) < viewportStart) {
+    if ((cats.height + item.height) < viewportStart) {
       cats.above.push(item);
-    } else if (cursor > viewportEnd) {
+    } else if (cats.height > viewportEnd) {
       cats.below.push(item);
     } else {
       cats.within.push(item);
     }
-    cursor += item.height;
+    cats.height += item.height;
   });
 
   return cats;
@@ -29,10 +29,6 @@ var Panel = React.createClass({
     return {scrollTop: 0};
   },
 
-  handleScroll: function(e) {
-    this.setState({scrollTop: this.getDOMNode().scrollTop});
-  },
-
   render: function() {
     var top = this.state.scrollTop + 0,
         bottom = top + 400,
@@ -40,7 +36,7 @@ var Panel = React.createClass({
 
     return (
       <div className='is-panel' onScroll={this.handleScroll}>
-        <ol className='is-content' >
+        <ol className='is-content' ref='content' >
           {[].concat(
             items.above.map(function(item) {
               return <PanelItem key={item.id} ref={item.id} item={item} visible={false} />
@@ -55,6 +51,10 @@ var Panel = React.createClass({
         </ol>
       </div>
     );
+  },
+
+  handleScroll: function(e) {
+    this.setState({scrollTop: this.getDOMNode().scrollTop});
   }
 });
 
