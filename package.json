@@ -1,0 +1,29 @@
+{
+  "name": "react-infinite-scroll",
+  "version": "0.0.0",
+  "description": "react-infinite-scroll =====================",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/xadn/react-infinite-scroll.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/xadn/react-infinite-scroll/issues"
+  },
+  "homepage": "https://github.com/xadn/react-infinite-scroll",
+  "devDependencies": {
+    "vinyl-source-stream": "^0.1.1",
+    "gulp": "^3.6.2",
+    "browserify": "^3.46.0",
+    "envify": "^1.2.1",
+    "react": "^0.10.0",
+    "reactify": "^0.13.1",
+    "lorem": "^0.4.0",
+    "chance": "^0.5.6"
+  }
+}

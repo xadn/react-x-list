@@ -1,0 +1,32 @@
+html {
+  font: 12px Helvetica, sans-serif;
+}
+
+.is-panel {
+  background-color: #AAA;
+  width: 200px;
+  height: 400px;
+  float: left;
+  margin-left: 5px;
+  overflow-y: scroll;
+}
+
+.is-content {
+/*  margin: 5px;
+  padding: 5px;*/
+  margin: 0;
+  padding: 0;
+}
+
+.is-item {
+  list-style-type: none;
+  background-color: #CCC;
+  border-bottom: solid black 1px;
+  box-sizing: border-box;
+  overflow: hidden;
+  -webkit-backface-visibility:hidden;
+}
+
+.is-item:last-child {
+  border-bottom: none;
+}
