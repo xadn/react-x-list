@@ -2,38 +2,26 @@
 var React = require('react/addons'),
     cx = React.addons.classSet;
 
-var Placeholder = React.createClass({
-  render: function() {
-    var style = {
-      height: this.props.height + 'px'
-    };
-
-    return <li className='is-item' style={style}></li>;
-  }
-});
-
 var PanelItem = React.createClass({
   getInitialState: function() {
     return {
       highlight: false,
-      lastScrolledAt: -1,
       doneScrollingTimeout: null
     };
   },
 
   componentDidUpdate: function() {
-    this.props.item.height = this.getDOMNode().offsetHeight;
-  },
+    if (!this.isMounted()) { return; }
 
-  render: function() {
-    if (this.props.visible || this.state.isScrolling) {
-      return this.visibleItem();
-    } else {
-      return <Placeholder height={this.props.item.height} />;
+    var height = this.getDOMNode().offsetHeight;
+
+    if (this.props.item.height !== height) {
+      this.props.item.height = height;
+      this.props.onItemChange();
     }
   },
 
-  visibleItem: function() {
+  render: function() {
     var classes = cx({
       'is-item': true,
       'is-highlight': this.state.highlight
@@ -46,30 +34,23 @@ var PanelItem = React.createClass({
     );
   },
 
-  hiddenItem: function() {
-    var style = {height: this.props.item.height + 'px',};
-
-    return (
-      <li className='is-item' style={style}>nothin</li>
-    );
-  },
-
   handleClick: function() {
     this.highlight();
     setTimeout(this.unhighlight, 1000);
   },
 
   handleWheel: function() {
-    clearTimeout(this.doneScrollingTimeout);
+    this.props.item.isScrolling = true;
 
+    clearTimeout(this.doneScrollingTimeout);
     this.setState({
-      isScrolling: true,
       doneScrollingTimeout: setTimeout(this.doneScrolling, 3000)
     });
   },
 
   doneScrolling: function() {
-    this.setState({isScrolling: false});
+    this.props.item.isScrolling = false;
+    this.props.onItemChange();
   },
 
   highlight: function() {

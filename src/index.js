@@ -4,7 +4,7 @@ var React = require('react'),
     Chance = require('chance'),
     chance = new Chance();
 
-var items = generateItems(100);
+var items = generateItems(100000);
 
 React.renderComponent(<Panel items={items} />, document.getElementById('main'));
 
