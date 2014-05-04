@@ -20455,7 +20455,7 @@ var PanelItem = React.createClass({displayName: 'PanelItem',
     if (this.props.visible || this.state.isScrolling) {
       return this.visibleItem();
     } else {
-      return Placeholder(null );
+      return Placeholder( {height:this.props.item.height} );
     }
   },
 

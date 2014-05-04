@@ -29,7 +29,7 @@ var PanelItem = React.createClass({
     if (this.props.visible || this.state.isScrolling) {
       return this.visibleItem();
     } else {
-      return <Placeholder />;
+      return <Placeholder height={this.props.item.height} />;
     }
   },
 
