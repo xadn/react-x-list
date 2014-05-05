@@ -21689,7 +21689,7 @@ var React = require('react'),
     Chance = require('chance'),
     chance = new Chance();
 
-var items = generateItems(100000);
+var items = generateItems(100);
 
 React.renderComponent(Panel( {items:items} ), document.getElementById('main'));
 
@@ -21732,24 +21732,24 @@ var Panel = React.createClass({displayName: 'Panel',
         placeholder = null;
 
     this.props.items.forEach(function(item) {
-      // if (item.isScrolling || isInViewport(cursor, cursor + item.height, viewportStart, viewportEnd)) {
-      //   if (placeholder) {
-      //     items.push(<PlaceholderItem key={placeholder.id} height={placeholder.height} />);
-      //     placeholder = null;
-      //   }
-      // items.push(<PanelItem key={item.id} ref={item.id} item={item} onItemChange={self.handleItemChange} />);
+      if (item.isScrolling || isInViewport(cursor, cursor + item.height, viewportStart, viewportEnd)) {
+        if (placeholder) {
+          items.push(PlaceholderItem( {key:placeholder.id, height:placeholder.height} ));
+          placeholder = null;
+        }
+
         items.push(PanelItem( {key:item.id, ref:item.id, item:item, onItemChange:self.handleItemChange} ));
 
-      // } else {
-      //   placeholder = placeholder || {id: item.id, height: 0};
-      //   placeholder.height += item.height;
-      // }
-      // cursor += item.height;
+      } else {
+        placeholder = placeholder || {id: item.id, height: 0};
+        placeholder.height += item.height;
+      }
+      cursor += item.height;
     });
 
-    // if (placeholder) {
-    //   items.push(<PlaceholderItem key={placeholder.id} height={placeholder.height} />);
-    // }
+    if (placeholder) {
+      items.push(PlaceholderItem( {key:placeholder.id, height:placeholder.height} ));
+    }
 
     return (
       React.DOM.div( {className:"is-panel", onScroll:this.handleScroll}, 
