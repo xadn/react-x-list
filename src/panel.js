@@ -16,18 +16,17 @@ var Panel = React.createClass({
 
   render: function() {
     var self = this,
-        viewportStart = this.state.scrollTop - 20,
-        viewportEnd = this.state.scrollTop + 400 + 20,
+        viewportStart = this.state.scrollTop - 300,
+        viewportEnd = this.state.scrollTop + 400 + 300,
         cursor = 0,
         items = [],
         propItems = this.props.items,
-        propItemsLen = propItems.length,
+        propItemsLen = propItems.length|0,
         i = 0,
         item = null,
         placeholder = null;
 
     // console.time('sortItems');
-
     for (; i < propItemsLen; i++) {
       item = propItems[i];
 
@@ -61,7 +60,7 @@ var Panel = React.createClass({
             </tr>
             <tr>
               <td>items:</td>
-              <td>{this.props.items.length}</td>
+              <td>{propItemsLen}</td>
             </tr>
           </table>
         </div>
@@ -74,7 +73,7 @@ var Panel = React.createClass({
     var ret = 0,
         i = 0,
         propItems = this.props.items,
-        propItemsLen = propItems.length;
+        propItemsLen = propItems.length|0;
 
     for (; i < propItemsLen; i++) {
       ret += propItems[i].height;
@@ -106,7 +105,7 @@ var Panel = React.createClass({
     // console.time('handleScroll');
     var node = this.getDOMNode(),
         scrollTop = node.scrollTop,
-        scrollHeight = node.scrollHeight
+        scrollHeight = node.scrollHeight,
         scrollDirection = 'up';
 
     if (scrollTop > this.state.scrollTop) {

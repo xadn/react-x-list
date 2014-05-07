@@ -21,10 +21,12 @@ html {
   list-style-type: none;
   background-color: #CCC;
   border-bottom: solid black 1px;
-  box-sizing: border-box;
   overflow: hidden;
-  backface-visibility:hidden;
+  box-sizing: border-box;
   -webkit-backface-visibility: hidden;
+  -moz-backface-visibility: hidden;
+  -ms-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .is-item:last-child {
