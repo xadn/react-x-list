@@ -31,6 +31,7 @@ var PanelItem = React.createClass({
 
     return (
       <li className={classes} onClick={this.handleClick} onWheel={this.handleWheel}>
+        <div>{this.props.item.id}</div>
         <div>{this.props.item.name}</div>
       </li>
     );

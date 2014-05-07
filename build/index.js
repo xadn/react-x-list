@@ -21850,6 +21850,7 @@ var PanelItem = React.createClass({displayName: 'PanelItem',
 
     return (
       React.DOM.li( {className:classes, onClick:this.handleClick, onWheel:this.handleWheel}, 
+        React.DOM.div(null, this.props.item.id),
         React.DOM.div(null, this.props.item.name)
       )
     );
