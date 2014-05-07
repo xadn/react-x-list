@@ -10,8 +10,10 @@ var PanelItem = React.createClass({
     };
   },
 
-  componentDidUpdate: function() {
-    if (!this.isMounted()) { return; }
+  componentDidMount: function() {
+    if (!this.isMounted()) {
+      return;
+    }
 
     var height = this.getDOMNode().offsetHeight;
 

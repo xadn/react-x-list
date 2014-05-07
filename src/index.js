@@ -4,7 +4,7 @@ var React = require('react'),
     Chance = require('chance'),
     chance = new Chance();
 
-var items = generateItems(100);
+var items = generateItems(10000);
 
 React.renderComponent(<Panel items={items} />, document.getElementById('main'));
 
@@ -19,3 +19,7 @@ function generateItems(count) {
   }
   return items;
 }
+
+setTimeout(function() {
+  document.querySelector('.is-panel').scrollTop = 100000;
+}, 300)

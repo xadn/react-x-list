@@ -15,7 +15,6 @@ html {
 .is-content {
   margin: 0;
   padding: 0;
-  -webkit-transform: translate(0px, 0px) translateZ(0px);
 }
 
 .is-item {
@@ -32,16 +31,12 @@ html {
   border-bottom: none;
 }
 
-.is-scrim {
-  /*pointer-events: none;*/
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  right: 0px;
-  background-color: red;
-  opacity: 0.25;
-}
-
 .is-highlight {
   background-color: yellow;
+}
+
+.is-debug-info {
+  position: fixed;
+  top: 415px;
+  font-size: 14px;
 }

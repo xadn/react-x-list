@@ -21689,7 +21689,7 @@ var React = require('react'),
     Chance = require('chance'),
     chance = new Chance();
 
-var items = generateItems(100);
+var items = generateItems(10000);
 
 React.renderComponent(Panel( {items:items} ), document.getElementById('main'));
 
@@ -21704,6 +21704,10 @@ function generateItems(count) {
   }
   return items;
 }
+
+setTimeout(function() {
+  document.querySelector('.is-panel').scrollTop = 100000;
+}, 300)
 },{"./panel":155,"chance":2,"react":152}],155:[function(require,module,exports){
 /** @jsx React.DOM */
 var _ = require('underscore'),
@@ -21719,14 +21723,15 @@ var Panel = React.createClass({displayName: 'Panel',
   getInitialState: function() {
     return {
       scrollTop: 0,
-      totalHeight: 0
+      totalHeight: 0,
+      scrollDirection: 'down'
     };
   },
 
   render: function() {
     var self = this,
-        viewportStart = this.state.scrollTop + 0,
-        viewportEnd = viewportStart + 400,
+        viewportStart = this.state.scrollTop - 20,
+        viewportEnd = this.state.scrollTop + 400 + 20,
         cursor = 0,
         items = [],
         placeholder = null;
@@ -21738,7 +21743,7 @@ var Panel = React.createClass({displayName: 'Panel',
           placeholder = null;
         }
 
-        items.push(PanelItem( {key:item.id, ref:item.id, item:item, onItemChange:self.handleItemChange} ));
+        items.push(PanelItem( {key:item.id, ref:item.id, item:item, onItemChange:self.handleItemChange, onHeightChange:self.handleHeightChange} ));
 
       } else {
         placeholder = placeholder || {id: item.id, height: 0};
@@ -21753,7 +21758,19 @@ var Panel = React.createClass({displayName: 'Panel',
 
     return (
       React.DOM.div( {className:"is-panel", onScroll:this.handleScroll}, 
-        React.DOM.ol( {className:"is-content"}, items)
+        React.DOM.ol( {className:"is-content"}, items),
+        React.DOM.div( {className:"is-debug-info"}, 
+          React.DOM.table(null, 
+            React.DOM.tr(null, 
+              React.DOM.td(null, "nodes:"),
+              React.DOM.td(null, items.length)
+            ),
+            React.DOM.tr(null, 
+              React.DOM.td(null, "items:"),
+              React.DOM.td(null, this.props.items.length)
+            )
+          )
+        )
       )
     );
   },
@@ -21764,12 +21781,35 @@ var Panel = React.createClass({displayName: 'Panel',
     }, 0);
   },
 
+  componentWillUpdate: function() {
+    var node = this.getDOMNode();
+    this.scrollHeight = node.scrollHeight;
+    this.scrollTop = node.scrollTop;
+  },
+
+  componentDidUpdate: function() {
+    if (this.state.scrollDirection === 'up') {
+      var node = this.getDOMNode();
+      node.scrollTop = this.scrollTop + (node.scrollHeight - this.scrollHeight);
+    }
+  },
+
   handleItemChange: function() {
     this.setState({totalHeight: this.totalHeight()})
   },
 
   handleScroll: function(e) {
-    this.setState({scrollTop: this.getDOMNode().scrollTop});
+    var newScrollTop = this.getDOMNode().scrollTop,
+        newScrollDirection = 'up';
+
+    if (newScrollTop > this.state.scrollTop) {
+      newScrollDirection = 'down';
+    }
+
+    this.setState({
+      scrollTop: newScrollTop,
+      scrollDirection: newScrollDirection
+    });
   }
 });
 
@@ -21789,8 +21829,10 @@ var PanelItem = React.createClass({displayName: 'PanelItem',
     };
   },
 
-  componentDidUpdate: function() {
-    if (!this.isMounted()) { return; }
+  componentDidMount: function() {
+    if (!this.isMounted()) {
+      return;
+    }
 
     var height = this.getDOMNode().offsetHeight;
 

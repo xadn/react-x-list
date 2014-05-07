@@ -12,14 +12,15 @@ var Panel = React.createClass({
   getInitialState: function() {
     return {
       scrollTop: 0,
-      totalHeight: 0
+      totalHeight: 0,
+      scrollDirection: 'down'
     };
   },
 
   render: function() {
     var self = this,
-        viewportStart = this.state.scrollTop + 0,
-        viewportEnd = viewportStart + 400,
+        viewportStart = this.state.scrollTop - 20,
+        viewportEnd = this.state.scrollTop + 400 + 20,
         cursor = 0,
         items = [],
         placeholder = null;
@@ -31,7 +32,7 @@ var Panel = React.createClass({
           placeholder = null;
         }
 
-        items.push(<PanelItem key={item.id} ref={item.id} item={item} onItemChange={self.handleItemChange} />);
+        items.push(<PanelItem key={item.id} ref={item.id} item={item} onItemChange={self.handleItemChange} onHeightChange={self.handleHeightChange} />);
 
       } else {
         placeholder = placeholder || {id: item.id, height: 0};
@@ -47,6 +48,18 @@ var Panel = React.createClass({
     return (
       <div className='is-panel' onScroll={this.handleScroll}>
         <ol className='is-content'>{items}</ol>
+        <div className='is-debug-info'>
+          <table>
+            <tr>
+              <td>nodes:</td>
+              <td>{items.length}</td>
+            </tr>
+            <tr>
+              <td>items:</td>
+              <td>{this.props.items.length}</td>
+            </tr>
+          </table>
+        </div>
       </div>
     );
   },
@@ -57,12 +70,35 @@ var Panel = React.createClass({
     }, 0);
   },
 
+  componentWillUpdate: function() {
+    var node = this.getDOMNode();
+    this.scrollHeight = node.scrollHeight;
+    this.scrollTop = node.scrollTop;
+  },
+
+  componentDidUpdate: function() {
+    if (this.state.scrollDirection === 'up') {
+      var node = this.getDOMNode();
+      node.scrollTop = this.scrollTop + (node.scrollHeight - this.scrollHeight);
+    }
+  },
+
   handleItemChange: function() {
     this.setState({totalHeight: this.totalHeight()})
   },
 
   handleScroll: function(e) {
-    this.setState({scrollTop: this.getDOMNode().scrollTop});
+    var newScrollTop = this.getDOMNode().scrollTop,
+        newScrollDirection = 'up';
+
+    if (newScrollTop > this.state.scrollTop) {
+      newScrollDirection = 'down';
+    }
+
+    this.setState({
+      scrollTop: newScrollTop,
+      scrollDirection: newScrollDirection
+    });
   }
 });
 
