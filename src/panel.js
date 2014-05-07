@@ -4,15 +4,12 @@ var _ = require('underscore'),
     PanelItem = require('./panel_item'),
     PlaceholderItem = require('./placeholder_item');
 
-function isInViewport(itemStart, itemEnd, viewportStart, viewportEnd) {
-  return itemEnd >= viewportStart && itemStart <= viewportEnd;
-}
-
 var Panel = React.createClass({
   getInitialState: function() {
     return {
-      scrollTop: 0,
       totalHeight: 0,
+      scrollTop: 0,
+      scrollHeight: 0,
       scrollDirection: 'down'
     };
   },
@@ -23,27 +20,35 @@ var Panel = React.createClass({
         viewportEnd = this.state.scrollTop + 400 + 20,
         cursor = 0,
         items = [],
+        propItems = this.props.items,
+        propItemsLen = propItems.length,
+        i = 0,
+        item = null,
         placeholder = null;
 
-    this.props.items.forEach(function(item) {
-      if (item.isScrolling || isInViewport(cursor, cursor + item.height, viewportStart, viewportEnd)) {
+    // console.time('sortItems');
+
+    for (; i < propItemsLen; i++) {
+      item = propItems[i];
+
+      if (item.isScrolling || cursor + item.height >= viewportStart && cursor <= viewportEnd) {
         if (placeholder) {
           items.push(<PlaceholderItem key={placeholder.id} height={placeholder.height} />);
           placeholder = null;
         }
-
         items.push(<PanelItem key={item.id} ref={item.id} item={item} onItemChange={self.handleItemChange} onHeightChange={self.handleHeightChange} />);
-
       } else {
-        placeholder = placeholder || {id: item.id, height: 0};
+        if (!placeholder) {
+          placeholder = {id: item.id, height: 0};
+        }
         placeholder.height += item.height;
       }
       cursor += item.height;
-    });
-
+    }
     if (placeholder) {
       items.push(<PlaceholderItem key={placeholder.id} height={placeholder.height} />);
     }
+    // console.timeEnd('sortItems');
 
     return (
       <div className='is-panel' onScroll={this.handleScroll}>
@@ -65,21 +70,31 @@ var Panel = React.createClass({
   },
 
   totalHeight: function() {
-    return _.reduce(this.props.item, function(memo, item) {
-      return memo + item.height;
-    }, 0);
-  },
+    // console.time('totalHeight');
+    var ret = 0,
+        i = 0,
+        propItems = this.props.items,
+        propItemsLen = propItems.length;
 
-  componentWillUpdate: function() {
-    var node = this.getDOMNode();
-    this.scrollHeight = node.scrollHeight;
-    this.scrollTop = node.scrollTop;
+    for (; i < propItemsLen; i++) {
+      ret += propItems[i].height;
+    }
+    // console.timeEnd('totalHeight');
+    return ret;
   },
 
   componentDidUpdate: function() {
     if (this.state.scrollDirection === 'up') {
-      var node = this.getDOMNode();
-      node.scrollTop = this.scrollTop + (node.scrollHeight - this.scrollHeight);
+      // console.time('componentDidUpdate');
+      var node = this.getDOMNode(),
+          oldScrollTop = node.scrollTop,
+          oldScrollHeight = node.scrollHeight,
+          newScrollTop = this.state.scrollTop + (oldScrollHeight - this.state.scrollHeight);
+
+      if (oldScrollTop !== newScrollTop) {
+        node.scrollTop = newScrollTop;
+      }
+      // console.timeEnd('componentDidUpdate');
     }
   },
 
@@ -88,17 +103,22 @@ var Panel = React.createClass({
   },
 
   handleScroll: function(e) {
-    var newScrollTop = this.getDOMNode().scrollTop,
-        newScrollDirection = 'up';
+    // console.time('handleScroll');
+    var node = this.getDOMNode(),
+        scrollTop = node.scrollTop,
+        scrollHeight = node.scrollHeight
+        scrollDirection = 'up';
 
-    if (newScrollTop > this.state.scrollTop) {
-      newScrollDirection = 'down';
+    if (scrollTop > this.state.scrollTop) {
+      scrollDirection = 'down';
     }
 
     this.setState({
-      scrollTop: newScrollTop,
-      scrollDirection: newScrollDirection
+      scrollDirection: scrollDirection,
+      scrollTop: scrollTop,
+      scrollHeight: scrollHeight
     });
+    // console.timeEnd('handleScroll');
   }
 });
 
