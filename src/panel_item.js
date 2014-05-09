@@ -4,13 +4,11 @@ var React = require('react/addons'),
 
 var PanelItem = React.createClass({
   getInitialState: function() {
-    return {
-      highlight: false,
-      doneScrollingTimeout: null
-    };
+    return {highlight: false};
   },
 
   componentDidMount: function() {
+    // console.time('componentDidUpdate')
     if (!this.isMounted()) {
       return;
     }
@@ -19,8 +17,8 @@ var PanelItem = React.createClass({
 
     if (this.props.item.height !== height) {
       this.props.item.height = height;
-      this.props.onItemChange();
     }
+    // console.timeEnd('componentDidUpdate')
   },
 
   render: function() {
@@ -43,17 +41,10 @@ var PanelItem = React.createClass({
   },
 
   handleWheel: function() {
+    // console.time('handleWheel')
     this.props.item.isScrolling = true;
-
-    clearTimeout(this.doneScrollingTimeout);
-    this.setState({
-      doneScrollingTimeout: setTimeout(this.doneScrolling, 3000)
-    });
-  },
-
-  doneScrolling: function() {
-    this.props.item.isScrolling = false;
-    this.props.onItemChange();
+    this.props.item.scrolledAt = Date.now();
+    // console.timeEnd('handleWheel')
   },
 
   highlight: function() {

@@ -9,25 +9,13 @@ var Panel = React.createClass({
     return {
       height: 0,
       width: 0,
-      totalHeight: 0,
       scrollTop: 0,
       scrollHeight: 0,
-      scrollDirection: 'down'
+      isScrollingUp: true
     };
   },
 
-  shouldComponentUpdate: function(nextProps, nextState) {
-    // console.log(_.isEqual(_.pluck(nextProps.items, 'id'), _.pluck(this.props.items, 'id')));
-
-    return this.state.totalHeight === nextState.totalHeight;
-  },
-
   render: function() {
-    console.count('render')
-    // console.log('scrollHeight', this.state.scrollHeight)
-    // console.log('scrollTop', this.state.scrollTop)
-    console.time('render');
-
     var height = this.state.height,
         padding = height,
         scrollTop = this.state.scrollTop,
@@ -42,6 +30,8 @@ var Panel = React.createClass({
         placeholder = null,
         html = null;
 
+    // console.time('render');
+    // console.profile('render');
     for (; i < propItemsLen; i++) {
       item = propItems[i];
 
@@ -50,7 +40,7 @@ var Panel = React.createClass({
           items.push(<PlaceholderItem key={placeholder.id} height={placeholder.height} />);
           placeholder = null;
         }
-        items.push(<PanelItem key={item.id} ref={item.id} item={item} onItemChange={this.handleItemChange} onHeightChange={this.handleHeightChange} />);
+        items.push(<PanelItem key={item.id} ref={item.id} item={item} />);
       } else {
         if (!placeholder) {
           placeholder = {id: item.id, height: 0};
@@ -62,8 +52,10 @@ var Panel = React.createClass({
     if (placeholder) {
       items.push(<PlaceholderItem key={placeholder.id} height={placeholder.height} />);
     }
+    // console.timeEnd('render');
+    // console.profileEnd('render');
 
-    html = (
+    return (
       <div className='is-panel' onScroll={this.handleScroll}>
         <ol className='is-content'>{items}</ol>
         <div className='is-debug-info'>
@@ -80,46 +72,6 @@ var Panel = React.createClass({
         </div>
       </div>
     );
-
-    console.timeEnd('render');
-
-    return html;
-  },
-
-  calculateVisibility: function() {
-    // console.time('calculateVisibility');
-    var height = this.state.height,
-        padding = height,
-        scrollTop = this.state.scrollTop,
-        viewportStart = scrollTop - padding,
-        viewportEnd = scrollTop + height + padding,
-        cursor = 0,
-        visible = [],
-        propItems = this.props.items,
-        propItemsLen = propItems.length|0,
-        i = 0;
-
-    for (; i < propItemsLen; i++) {
-      if (item.isScrolling || cursor + item.height >= viewportStart && cursor <= viewportEnd) {
-        visible += propItems[i].height;
-      }
-    }
-    // console.timeEnd('calculateVisibility');
-    return ret;
-  },
-
-  totalHeight: function() {
-    // console.time('totalHeight');
-    var ret = 0,
-        i = 0,
-        propItems = this.props.items,
-        propItemsLen = propItems.length|0;
-
-    for (; i < propItemsLen; i++) {
-      ret += propItems[i].height;
-    }
-    // console.timeEnd('totalHeight');
-    return ret;
   },
 
   componentDidMount: function() {
@@ -127,7 +79,7 @@ var Panel = React.createClass({
   },
 
   componentDidUpdate: function() {
-    if (this.state.scrollDirection === 'up') {
+    if (this.state.isScrollingUp) {
       // console.time('componentDidUpdate');
       var node = this.getDOMNode(),
           oldScrollTop = node.scrollTop,
@@ -141,23 +93,19 @@ var Panel = React.createClass({
     }
   },
 
-  handleItemChange: function() {
-    this.setState({totalHeight: this.totalHeight()})
-  },
-
   handleScroll: function(e) {
     // console.time('handleScroll');
     var node = this.getDOMNode(),
         scrollTop = node.scrollTop,
         scrollHeight = node.scrollHeight,
-        scrollDirection = 'up';
+        isScrollingUp = true;
 
     if (scrollTop > this.state.scrollTop) {
-      scrollDirection = 'down';
+      isScrollingUp = false;
     }
 
     this.setState({
-      scrollDirection: scrollDirection,
+      isScrollingUp: isScrollingUp,
       scrollTop: scrollTop,
       scrollHeight: scrollHeight
     });

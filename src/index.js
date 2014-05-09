@@ -14,11 +14,26 @@ function generateItems(count) {
     items.push({
       id: i + 1,
       name: chance.sentence(),
-      height: 20
+      height: 20,
+      scrolledAt: -1,
+      isScrolling: false
     });
   }
   return items;
 }
+
+setInterval(function expireScrolling() {
+  // console.time('expireScrolling')
+  var itemsLen = items.length|0,
+      now = Date.now();
+
+  for (var i = 0; i < itemsLen; i++) {
+    if (items[i].isScrolling && items[i].scrolledAt + 3000 < now) {
+      items[i].isScrolling = false;
+    }
+  }
+  // console.timeEnd('expireScrolling')
+}, 1000);
 
 setTimeout(function() {
   document.querySelector('.is-panel').scrollTop = 100000;
