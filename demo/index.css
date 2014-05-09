@@ -5,8 +5,8 @@ html {
 .is-panel {
   position: relative;
   background-color: #AAA;
-  width: 200px;
-  height: 400px;
+  width: 458px;
+  height: 754px;
   float: left;
   margin-left: 5px;
   overflow-y: scroll;
@@ -39,6 +39,7 @@ html {
 
 .is-debug-info {
   position: fixed;
-  top: 415px;
+  top: 700px;
+  left: 500px;
   font-size: 14px;
 }

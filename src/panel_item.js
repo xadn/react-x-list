@@ -47,7 +47,7 @@ var PanelItem = React.createClass({
 
     clearTimeout(this.doneScrollingTimeout);
     this.setState({
-      doneScrollingTimeout: setTimeout(this.doneScrolling, 15000)
+      doneScrollingTimeout: setTimeout(this.doneScrolling, 3000)
     });
   },
 

@@ -21718,6 +21718,8 @@ var _ = require('underscore'),
 var Panel = React.createClass({displayName: 'Panel',
   getInitialState: function() {
     return {
+      height: 0,
+      width: 0,
       totalHeight: 0,
       scrollTop: 0,
       scrollHeight: 0,
@@ -21725,19 +21727,32 @@ var Panel = React.createClass({displayName: 'Panel',
     };
   },
 
+  shouldComponentUpdate: function(nextProps, nextState) {
+    // console.log(_.isEqual(_.pluck(nextProps.items, 'id'), _.pluck(this.props.items, 'id')));
+
+    return this.state.totalHeight === nextState.totalHeight;
+  },
+
   render: function() {
-    var self = this,
-        viewportStart = this.state.scrollTop - 300,
-        viewportEnd = this.state.scrollTop + 400 + 300,
+    console.count('render')
+    // console.log('scrollHeight', this.state.scrollHeight)
+    // console.log('scrollTop', this.state.scrollTop)
+    console.time('render');
+
+    var height = this.state.height,
+        padding = height,
+        scrollTop = this.state.scrollTop,
+        viewportStart = scrollTop - padding,
+        viewportEnd = scrollTop + height + padding,
         cursor = 0,
         items = [],
         propItems = this.props.items,
         propItemsLen = propItems.length|0,
         i = 0,
         item = null,
-        placeholder = null;
+        placeholder = null,
+        html = null;
 
-    // console.time('sortItems');
     for (; i < propItemsLen; i++) {
       item = propItems[i];
 
@@ -21746,7 +21761,7 @@ var Panel = React.createClass({displayName: 'Panel',
           items.push(PlaceholderItem( {key:placeholder.id, height:placeholder.height} ));
           placeholder = null;
         }
-        items.push(PanelItem( {key:item.id, ref:item.id, item:item, onItemChange:self.handleItemChange, onHeightChange:self.handleHeightChange} ));
+        items.push(PanelItem( {key:item.id, ref:item.id, item:item, onItemChange:this.handleItemChange, onHeightChange:this.handleHeightChange} ));
       } else {
         if (!placeholder) {
           placeholder = {id: item.id, height: 0};
@@ -21758,9 +21773,8 @@ var Panel = React.createClass({displayName: 'Panel',
     if (placeholder) {
       items.push(PlaceholderItem( {key:placeholder.id, height:placeholder.height} ));
     }
-    // console.timeEnd('sortItems');
 
-    return (
+    html = (
       React.DOM.div( {className:"is-panel", onScroll:this.handleScroll}, 
         React.DOM.ol( {className:"is-content"}, items),
         React.DOM.div( {className:"is-debug-info"}, 
@@ -21777,6 +21791,32 @@ var Panel = React.createClass({displayName: 'Panel',
         )
       )
     );
+
+    console.timeEnd('render');
+
+    return html;
+  },
+
+  calculateVisibility: function() {
+    // console.time('calculateVisibility');
+    var height = this.state.height,
+        padding = height,
+        scrollTop = this.state.scrollTop,
+        viewportStart = scrollTop - padding,
+        viewportEnd = scrollTop + height + padding,
+        cursor = 0,
+        visible = [],
+        propItems = this.props.items,
+        propItemsLen = propItems.length|0,
+        i = 0;
+
+    for (; i < propItemsLen; i++) {
+      if (item.isScrolling || cursor + item.height >= viewportStart && cursor <= viewportEnd) {
+        visible += propItems[i].height;
+      }
+    }
+    // console.timeEnd('calculateVisibility');
+    return ret;
   },
 
   totalHeight: function() {
@@ -21791,6 +21831,10 @@ var Panel = React.createClass({displayName: 'Panel',
     }
     // console.timeEnd('totalHeight');
     return ret;
+  },
+
+  componentDidMount: function() {
+    this.setState({height: this.getDOMNode().offsetHeight});
   },
 
   componentDidUpdate: function() {
@@ -21885,7 +21929,7 @@ var PanelItem = React.createClass({displayName: 'PanelItem',
 
     clearTimeout(this.doneScrollingTimeout);
     this.setState({
-      doneScrollingTimeout: setTimeout(this.doneScrolling, 15000)
+      doneScrollingTimeout: setTimeout(this.doneScrolling, 3000)
     });
   },
 
