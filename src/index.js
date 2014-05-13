@@ -16,7 +16,8 @@ function generateItems(count) {
       name: chance.sentence(),
       height: 20,
       scrolledAt: -1,
-      isScrolling: false
+      isScrolling: false,
+      isVisible: false
     });
   }
   return items;

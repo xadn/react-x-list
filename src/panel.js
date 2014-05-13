@@ -28,7 +28,23 @@ var Panel = React.createClass({
         i = 0,
         item = null,
         placeholder = null,
-        html = null;
+        checksum = '';
+
+    // console.time('calculate');
+    for (; i < propItemsLen; i++) {
+      item = propItems[i];
+
+      if (item.isScrolling || cursor + item.height >= viewportStart && cursor <= viewportEnd) {
+        checksum += item.id + 'v';
+      } else {
+        checksum += item.id + 'h';
+      }
+      cursor += item.height;
+    }
+    console.timeEnd('calculate');
+
+    i = 0;
+    cursor = 0;
 
     // console.time('render');
     // console.profile('render');
