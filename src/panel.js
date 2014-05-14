@@ -4,6 +4,9 @@ var _ = require('underscore'),
     PanelItem = require('./panel_item'),
     PlaceholderItem = require('./placeholder_item');
 
+var perfTotal = 0,
+    perfCount = 0;
+
 var Panel = React.createClass({
   getInitialState: function() {
     return {
@@ -16,9 +19,9 @@ var Panel = React.createClass({
   },
 
   render: function() {
-    var height = this.state.height,
+    var height = +this.state.height,
         padding = height,
-        scrollTop = this.state.scrollTop,
+        scrollTop = +this.state.scrollTop,
         viewportStart = scrollTop - padding,
         viewportEnd = scrollTop + height + padding,
         cursor = 0,
@@ -27,47 +30,43 @@ var Panel = React.createClass({
         propItemsLen = propItems.length|0,
         i = 0,
         item = null,
-        placeholder = null,
-        checksum = '';
-
-    // console.time('calculate');
-    for (; i < propItemsLen; i++) {
-      item = propItems[i];
-
-      if (item.isScrolling || cursor + item.height >= viewportStart && cursor <= viewportEnd) {
-        checksum += item.id + 'v';
-      } else {
-        checksum += item.id + 'h';
-      }
-      cursor += item.height;
-    }
-    console.timeEnd('calculate');
-
-    i = 0;
-    cursor = 0;
+        itemHeight = 0,
+        placeholderId = -1,
+        placeholderHeight = 0,
+        t = +0;
 
     // console.time('render');
     // console.profile('render');
+
+    t = performance.now();
     for (; i < propItemsLen; i++) {
       item = propItems[i];
+      itemHeight = +item.height;
+      itemId = item.id;
 
-      if (item.isScrolling || cursor + item.height >= viewportStart && cursor <= viewportEnd) {
-        if (placeholder) {
-          items.push(<PlaceholderItem key={placeholder.id} height={placeholder.height} />);
-          placeholder = null;
+      if (item.isScrolling || cursor + itemHeight >= viewportStart && cursor <= viewportEnd) {
+        if (placeholderId !== -1) {
+          items.push(<PlaceholderItem key={placeholderId} height={placeholderHeight} />);
+          placeholderId = -1;
         }
-        items.push(<PanelItem key={item.id} ref={item.id} item={item} />);
+        items.push(<PanelItem key={itemId} ref={itemId} item={item} />);
       } else {
-        if (!placeholder) {
-          placeholder = {id: item.id, height: 0};
+        if (placeholderId === -1) {
+          placeholderId = itemId;
+          placeholderHeight = 0;
         }
-        placeholder.height += item.height;
+        placeholderHeight += itemHeight;
       }
-      cursor += item.height;
+      cursor += itemHeight;
     }
-    if (placeholder) {
-      items.push(<PlaceholderItem key={placeholder.id} height={placeholder.height} />);
+    if (placeholderId !== -1) {
+      items.push(<PlaceholderItem key={placeholderId} height={placeholderHeight} />);
     }
+    t = performance.now() - t;
+
+    perfCount++;
+    perfTotal += t;
+    console.log('render', perfTotal/perfCount);
     // console.timeEnd('render');
     // console.profileEnd('render');
 
