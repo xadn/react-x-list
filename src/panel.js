@@ -37,8 +37,8 @@ var Panel = React.createClass({
 
     // console.time('render');
     // console.profile('render');
+    // t = performance.now();
 
-    t = performance.now();
     for (; i < propItemsLen; i++) {
       item = propItems[i];
       itemHeight = +item.height;
@@ -62,11 +62,11 @@ var Panel = React.createClass({
     if (placeholderId !== -1) {
       items.push(<PlaceholderItem key={placeholderId} height={placeholderHeight} />);
     }
-    t = performance.now() - t;
 
-    perfCount++;
-    perfTotal += t;
-    console.log('render', perfTotal/perfCount);
+    // t = performance.now() - t;
+    // perfCount++;
+    // perfTotal += t;
+    // console.log('render', perfTotal/perfCount);
     // console.timeEnd('render');
     // console.profileEnd('render');
 
