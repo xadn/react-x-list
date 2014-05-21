@@ -21689,9 +21689,12 @@ var React = require('react'),
     Chance = require('chance'),
     chance = new Chance();
 
-var items = generateItems(10000);
-
-React.renderComponent(Panel( {items:items} ), document.getElementById('main'));
+React.renderComponent(
+  React.DOM.div(null, 
+    Panel( {items:generateItems(10000)} ),
+    Panel( {items:generateItems(10000)} )
+  ), document.getElementById('main'));
+    // <Panel items={generateItems(10000)} />
 
 function generateItems(count) {
   var items = [];
@@ -21708,21 +21711,10 @@ function generateItems(count) {
   return items;
 }
 
-setInterval(function expireScrolling() {
-  // console.time('expireScrolling')
-  var itemsLen = items.length|0,
-      now = Date.now();
-
-  for (var i = 0; i < itemsLen; i++) {
-    if (items[i].isScrolling && items[i].scrolledAt + 3000 < now) {
-      items[i].isScrolling = false;
-    }
-  }
-  // console.timeEnd('expireScrolling')
-}, 1000);
-
 setTimeout(function() {
-  document.querySelector('.is-panel').scrollTop = 100000;
+  [].forEach.call(document.querySelectorAll('.is-panel'), function(node) {
+    node.scrollTop = 100000;
+  });
 }, 300)
 },{"./panel":155,"chance":2,"react":152}],155:[function(require,module,exports){
 /** @jsx React.DOM */
@@ -21741,7 +21733,8 @@ var Panel = React.createClass({displayName: 'Panel',
       width: 0,
       scrollTop: 0,
       scrollHeight: 0,
-      isScrollingUp: true
+      isScrollingUp: true,
+      expireScrollingInterval: null
     };
   },
 
@@ -21817,7 +21810,14 @@ var Panel = React.createClass({displayName: 'Panel',
   },
 
   componentDidMount: function() {
-    this.setState({height: this.getDOMNode().offsetHeight});
+    this.setState({
+      height: this.getDOMNode().offsetHeight,
+      expireScrollingInterval: setInterval(this.expireScrolling, 1000)
+    });
+  },
+
+  componentWillUnmount: function() {
+    clearInterval(this.state.expireScrollingInterval);
   },
 
   componentDidUpdate: function() {
@@ -21852,7 +21852,21 @@ var Panel = React.createClass({displayName: 'Panel',
       scrollHeight: scrollHeight
     });
     // console.timeEnd('handleScroll');
-  }
+  },
+
+  expireScrolling: function() {
+      // console.time('expireScrolling')
+      var items = this.props.items,
+          itemsLen = items.length|0,
+          now = Date.now();
+
+      for (var i = 0; i < itemsLen; i++) {
+        if (items[i].isScrolling && items[i].scrolledAt + 3000 < now) {
+          items[i].isScrolling = false;
+        }
+      }
+      // console.timeEnd('expireScrolling')
+    }
 });
 
 module.exports = Panel;

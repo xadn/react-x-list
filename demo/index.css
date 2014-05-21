@@ -2,11 +2,15 @@ html {
   font: 12px Helvetica, sans-serif;
 }
 
+#main {
+  min-width: 980px;
+}
+
 .is-panel {
   position: relative;
   background-color: #AAA;
   width: 458px;
-  height: 754px;
+  height: 650px;
   float: left;
   margin-left: 5px;
   overflow-y: scroll;
@@ -39,7 +43,6 @@ html {
 
 .is-debug-info {
   position: fixed;
-  top: 700px;
-  left: 500px;
+  top: 680px;
   font-size: 14px;
 }

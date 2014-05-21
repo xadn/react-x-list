@@ -14,7 +14,8 @@ var Panel = React.createClass({
       width: 0,
       scrollTop: 0,
       scrollHeight: 0,
-      isScrollingUp: true
+      isScrollingUp: true,
+      expireScrollingInterval: null
     };
   },
 
@@ -90,7 +91,14 @@ var Panel = React.createClass({
   },
 
   componentDidMount: function() {
-    this.setState({height: this.getDOMNode().offsetHeight});
+    this.setState({
+      height: this.getDOMNode().offsetHeight,
+      expireScrollingInterval: setInterval(this.expireScrolling, 1000)
+    });
+  },
+
+  componentWillUnmount: function() {
+    clearInterval(this.state.expireScrollingInterval);
   },
 
   componentDidUpdate: function() {
@@ -125,7 +133,21 @@ var Panel = React.createClass({
       scrollHeight: scrollHeight
     });
     // console.timeEnd('handleScroll');
-  }
+  },
+
+  expireScrolling: function() {
+      // console.time('expireScrolling')
+      var items = this.props.items,
+          itemsLen = items.length|0,
+          now = Date.now();
+
+      for (var i = 0; i < itemsLen; i++) {
+        if (items[i].isScrolling && items[i].scrolledAt + 3000 < now) {
+          items[i].isScrolling = false;
+        }
+      }
+      // console.timeEnd('expireScrolling')
+    }
 });
 
 module.exports = Panel;
