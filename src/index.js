@@ -7,16 +7,15 @@ var React = require('react'),
 React.renderComponent(
   <div>
     <Panel items={generateItems(10000)} />
-    <Panel items={generateItems(10000)} />
+    <Panel items={generateItems(200)} />
   </div>, document.getElementById('main'));
-    // <Panel items={generateItems(10000)} />
 
 function generateItems(count) {
   var items = [];
   for (var i = 0; i < count; i++) {
     items.push({
       id: i + 1,
-      name: chance.sentence(),
+      name: chance.sentence({words: chance.natural({min: 1, max: 40})}),
       height: 20,
       scrolledAt: -1,
       isScrolling: false,
