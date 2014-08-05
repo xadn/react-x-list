@@ -21681,9 +21681,35 @@ module.exports = warning;
 
 },{}],153:[function(require,module,exports){
 /** @jsx React.DOM */
+var React = require('react/addons');
+
+var DebugInfo = React.createClass({displayName: 'DebugInfo',
+  render: function() {
+    return (
+      React.DOM.div( {className:"is-debug-info"}, 
+        React.DOM.table(null, 
+          React.DOM.tr(null, 
+            React.DOM.td(null, "nodes:"),
+            React.DOM.td(null, this.props.nodeCount)
+          ),
+          React.DOM.tr(null, 
+            React.DOM.td(null, "items:"),
+            React.DOM.td(null, this.props.itemCount)
+          )
+        )
+      )
+    );
+  }
+});
+
+module.exports = DebugInfo;
+
+},{"react/addons":3}],154:[function(require,module,exports){
+/** @jsx React.DOM */
 var _ = require('underscore');
 var React = require('react/addons');
 var cloneWithProps = React.addons.cloneWithProps;
+var DebugInfo = require('./debug_info');
 
 var FiniteList = React.createClass({displayName: 'FiniteList',
   getDefaultProps: function() {
@@ -21750,7 +21776,8 @@ var FiniteList = React.createClass({displayName: 'FiniteList',
       React.DOM.div( {className:"is-panel", onScroll:this.handleScroll}, 
         React.DOM.ol( {className:"is-content"}, 
           list
-        )
+        ),
+        DebugInfo( {itemCount:children.length, nodeCount:list.length} )
       )
     );
 
@@ -21855,7 +21882,7 @@ var FiniteList = React.createClass({displayName: 'FiniteList',
 module.exports = FiniteList;
 
 
-},{"react/addons":3,"underscore":152}],154:[function(require,module,exports){
+},{"./debug_info":153,"react/addons":3,"underscore":152}],155:[function(require,module,exports){
 /** @jsx React.DOM */
 var React = require('react/addons'),
     FiniteList = require('./finite_list'),
@@ -21906,4 +21933,4 @@ setTimeout(function() {
     node.scrollTop = 100000;
   });
 }, 300)
-},{"./finite_list":153,"chance":2,"react/addons":3}]},{},[154])
+},{"./finite_list":154,"chance":2,"react/addons":3}]},{},[155])

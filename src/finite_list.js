@@ -2,6 +2,7 @@
 var _ = require('underscore');
 var React = require('react/addons');
 var cloneWithProps = React.addons.cloneWithProps;
+var DebugInfo = require('./debug_info');
 
 var FiniteList = React.createClass({
   getDefaultProps: function() {
@@ -69,6 +70,7 @@ var FiniteList = React.createClass({
         <ol className='is-content'>
           {list}
         </ol>
+        <DebugInfo itemCount={children.length} nodeCount={list.length} />
       </div>
     );
 
