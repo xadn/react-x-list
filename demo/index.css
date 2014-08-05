@@ -22,7 +22,7 @@ html {
   padding: 0;
 }
 
-.is-item {
+.is-panel > li {
   list-style-type: none;
   background-color: #CCC;
   border-bottom: solid black 1px;

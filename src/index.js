@@ -1,13 +1,31 @@
 /** @jsx React.DOM */
 var React = require('react'),
-    Panel = require('./panel'),
+    FiniteList = require('./finite_list'),
     Chance = require('chance'),
     chance = new Chance();
 
 React.renderComponent(
   <div>
-    <Panel items={generateItems(10000)} />
-    <Panel items={generateItems(200)} />
+    <FiniteList>
+      {generateItems(200).map(function(item) {
+        return (
+          <li key={item.id}>
+            <div>{item.id}</div>
+            <div>{item.name}</div>
+          </li>
+        );
+      })}
+    </FiniteList>
+    <FiniteList>
+      {generateItems(5000).map(function(item) {
+        return (
+          <li key={item.id}>
+            <div>{item.id}</div>
+            <div>{item.name}</div>
+          </li>
+        );
+      })}
+    </FiniteList>
   </div>, document.getElementById('main'));
 
 function generateItems(count) {
