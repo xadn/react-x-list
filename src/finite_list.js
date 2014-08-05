@@ -1,8 +1,6 @@
 /** @jsx React.DOM */
 var _ = require('underscore');
-var React = require('react');
-var FiniteListItemWrapper = require('./finite_list_item_wrapper');
-var PlaceholderItem = require('./placeholder_item');
+var React = require('react/addons');
 var cloneWithProps = React.addons.cloneWithProps;
 
 var FiniteList = React.createClass({
@@ -22,7 +20,7 @@ var FiniteList = React.createClass({
   },
 
   render: function() {
-    console.time('render');
+    // console.time('render');
 
     var height = this.state.height;
     var padding = height;
@@ -74,7 +72,7 @@ var FiniteList = React.createClass({
       </div>
     );
 
-    console.timeEnd('render');
+    // console.timeEnd('render');
     return elements;
   },
 
@@ -90,7 +88,7 @@ var FiniteList = React.createClass({
   },
 
   updateHeights: function() {
-    console.time('updateHeights');
+    // console.time('updateHeights');
 
     var keys = this.keys();
     var newListHeights = {};
@@ -117,7 +115,7 @@ var FiniteList = React.createClass({
       height: this.getDOMNode().offsetHeight
     });
 
-    console.timeEnd('updateHeights');
+    // console.timeEnd('updateHeights');
   },
 
   keys: function() {

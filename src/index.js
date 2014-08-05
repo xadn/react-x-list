@@ -1,5 +1,5 @@
 /** @jsx React.DOM */
-var React = require('react'),
+var React = require('react/addons'),
     FiniteList = require('./finite_list'),
     Chance = require('chance'),
     chance = new Chance();

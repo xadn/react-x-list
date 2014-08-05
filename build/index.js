@@ -20335,9 +20335,6 @@ module.exports = warning;
 
 }).call(this,require("/Users/pivotal/workspace/react-infinite-scroll/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
 },{"./emptyFunction":112,"/Users/pivotal/workspace/react-infinite-scroll/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":1}],152:[function(require,module,exports){
-module.exports = require('./lib/React');
-
-},{"./lib/React":29}],153:[function(require,module,exports){
 //     Underscore.js 1.6.0
 //     http://underscorejs.org
 //     (c) 2009-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -21682,12 +21679,10 @@ module.exports = require('./lib/React');
   }
 }).call(this);
 
-},{}],154:[function(require,module,exports){
+},{}],153:[function(require,module,exports){
 /** @jsx React.DOM */
 var _ = require('underscore');
-var React = require('react');
-var FiniteListItemWrapper = require('./finite_list_item_wrapper');
-var PlaceholderItem = require('./placeholder_item');
+var React = require('react/addons');
 var cloneWithProps = React.addons.cloneWithProps;
 
 var FiniteList = React.createClass({displayName: 'FiniteList',
@@ -21707,7 +21702,7 @@ var FiniteList = React.createClass({displayName: 'FiniteList',
   },
 
   render: function() {
-    console.time('render');
+    // console.time('render');
 
     var height = this.state.height;
     var padding = height;
@@ -21759,7 +21754,7 @@ var FiniteList = React.createClass({displayName: 'FiniteList',
       )
     );
 
-    console.timeEnd('render');
+    // console.timeEnd('render');
     return elements;
   },
 
@@ -21775,7 +21770,7 @@ var FiniteList = React.createClass({displayName: 'FiniteList',
   },
 
   updateHeights: function() {
-    console.time('updateHeights');
+    // console.time('updateHeights');
 
     var keys = this.keys();
     var newListHeights = {};
@@ -21802,7 +21797,7 @@ var FiniteList = React.createClass({displayName: 'FiniteList',
       height: this.getDOMNode().offsetHeight
     });
 
-    console.timeEnd('updateHeights');
+    // console.timeEnd('updateHeights');
   },
 
   keys: function() {
@@ -21860,51 +21855,9 @@ var FiniteList = React.createClass({displayName: 'FiniteList',
 module.exports = FiniteList;
 
 
-},{"./finite_list_item_wrapper":155,"./placeholder_item":157,"react":152,"underscore":153}],155:[function(require,module,exports){
+},{"react/addons":3,"underscore":152}],154:[function(require,module,exports){
 /** @jsx React.DOM */
 var React = require('react/addons'),
-    cloneWithProps = React.addons.cloneWithProps,
-    cx = React.addons.classSet;
-
-var FiniteListItemWrapper = React.createClass({displayName: 'FiniteListItemWrapper',
-  render: function() {
-    return cloneWithProps(this.props.children, {onWheel: this.handleWheel});
-  },
-
-  componentDidMount: function() {
-    // this.props.metadata = {};
-    this.updateHeight();
-  },
-
-  componentDidUpdate: function() {
-    this.updateHeight();
-  },
-
-  componentWillUnmount: function() {
-    // this.props.metadata = null;
-  },
-
-  updateHeight: function() {
-    if (!this.isMounted()) { return; }
-
-    console.log('updateHeight')
-
-    var height = this.getDOMNode().offsetHeight;
-
-    if (this.props.metadata.height !== height) {
-      this.props.metadata.height = height;
-    }
-  },
-
-  handleWheel: function() {
-    this.props.metadata.lastScrolledAt = Date.now();
-  }
-});
-
-module.exports = FiniteListItemWrapper;
-},{"react/addons":3}],156:[function(require,module,exports){
-/** @jsx React.DOM */
-var React = require('react'),
     FiniteList = require('./finite_list'),
     Chance = require('chance'),
     chance = new Chance();
@@ -21953,19 +21906,4 @@ setTimeout(function() {
     node.scrollTop = 100000;
   });
 }, 300)
-},{"./finite_list":154,"chance":2,"react":152}],157:[function(require,module,exports){
-/** @jsx React.DOM */
-var React = require('react');
-
-var PlaceholderItem = React.createClass({displayName: 'PlaceholderItem',
-  render: function() {
-    var style = {
-      height: this.props.height + 'px'
-    };
-
-    return React.DOM.li( {className:"is-item", style:style});
-  }
-});
-
-module.exports = PlaceholderItem
-},{"react":152}]},{},[156])
+},{"./finite_list":153,"chance":2,"react/addons":3}]},{},[154])
