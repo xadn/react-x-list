@@ -4,6 +4,8 @@ var React = require('react/addons');
 var cloneWithProps = React.addons.cloneWithProps;
 var DebugInfo = require('./debug_info');
 
+function sumFn(memo, num) { return memo + num };
+
 var FiniteList = React.createClass({
   getDefaultProps: function() {
     return {defaultHeight: 20};
@@ -15,12 +17,13 @@ var FiniteList = React.createClass({
       scrollTop: 0,
       scrollHeight: 0,
       isScrollingUp: true,
-      listHeights: {},
-      lastScrolledKey: NaN
+      lastScrolledKey: NaN,
+      childrenMetadata: {}
     };
   },
 
   render: function() {
+    var t1 = performance.now();
     // console.time('render');
 
     var height = this.state.height;
@@ -28,22 +31,21 @@ var FiniteList = React.createClass({
     var scrollTop = this.state.scrollTop;
     var viewportStart = scrollTop - padding;
     var viewportEnd = scrollTop + height + padding;
-    var listHeights = this.state.listHeights;
+    var childrenMetadata = this.state.childrenMetadata;
     var children = this.props.children;
     var defaultHeight = this.props.defaultHeight;
     var lastScrolledKey = this.state.lastScrolledKey;
 
-    var runningHeight = 0;
     var placeholder = {height: 0, key: void 0};
     var list = [];
 
     for (var i = 0; i < children.length; i++) {
       var key = children[i].props.key;
-      var top = runningHeight;
-      var height = listHeights[key] || defaultHeight;
-      var bottom = top + height;
+      var top = childrenMetadata[key].top;
+      var height = childrenMetadata[key].height;
+      var bottom = childrenMetadata[key].bottom;
 
-      if (key === lastScrolledKey || bottom >= viewportStart && top <= viewportEnd) {
+      if (key === lastScrolledKey || top <= viewportEnd && bottom >= viewportStart) {
         if (placeholder.height > 0) {
           list.push(<li style={{height: placeholder.height + 'px'}} />)
           placeholder.key = void 0;
@@ -56,8 +58,6 @@ var FiniteList = React.createClass({
         }
         placeholder.height += height;
       }
-
-      runningHeight += height;
     }
 
     if (placeholder.height !== 0) {
@@ -65,16 +65,30 @@ var FiniteList = React.createClass({
       placeholder.height = 0;
     }
 
+    if (list.length !== this.lastListCount) {
+      this.lastListCount = list.length;
+      // console.log('listCount', this.lastListCount);
+    }
+
     var elements = (
       <div className='is-panel' onScroll={this.handleScroll}>
         <ol className='is-content'>
           {list}
         </ol>
-        <DebugInfo itemCount={children.length} nodeCount={list.length} />
+        <DebugInfo itemCount={children.length} nodeCount={this.lastListCount} />
       </div>
     );
 
+    var t2 = performance.now();
+    if (this.perfs.length === 20) {
+      var perf = (this.perfs.reduce(sumFn) / this.perfs.length) / 1000;
+      this.perfs = [];
+      console.log({time: perf, nodes: this.lastListCount});
+    } else {
+      this.perfs.push(t2);
+    }
     // console.timeEnd('render');
+
     return elements;
   },
 
@@ -92,47 +106,49 @@ var FiniteList = React.createClass({
   updateHeights: function() {
     // console.time('updateHeights');
 
-    var keys = this.keys();
-    var newListHeights = {};
-    var oldListHeights = this.state.listHeights;
-    var refs = this.refs;
+    var newChildrenMetadata = {};
+    var childrenMetadata = this.state.childrenMetadata;
+    var children = this.props.children;
     var defaultHeight = this.props.defaultHeight;
+    var refs = this.refs;
+    var prevBottom = 0;
 
-    for (var i = 0; i < keys.length; i++) {
-      var key = keys[i];
+    for(var i = 0; i < children.length; i++) {
+      var childMetadata;
+      var key = children[i].props.key;
 
-      if (oldListHeights[key]) {
-        newListHeights[key] = oldListHeights[key];
+      if (childrenMetadata[key]) {
+        childMetadata = childrenMetadata[key];
       } else {
-        newListHeights[key] = 20;
+        childMetadata = {
+          height: defaultHeight
+        };
       }
+
+      childMetadata.top = prevBottom;
 
       if (refs[key]) {
-        newListHeights[key] = refs[key].getDOMNode().offsetHeight;
+        childMetadata.height = refs[key].getDOMNode().offsetHeight;
       }
+
+      childMetadata.bottom = childMetadata.top + childMetadata.height;
+      prevBottom = childMetadata.bottom;
+
+      newChildrenMetadata[key] = childMetadata;
     }
 
     this.setState({
-      listHeights: newListHeights,
-      height: this.getDOMNode().offsetHeight
+      childrenMetadata: newChildrenMetadata,
+      height: this.isMounted() && this.getDOMNode().offsetHeight
     });
 
     // console.timeEnd('updateHeights');
   },
 
-  keys: function() {
-    // console.time('keys')
-
-    var children = this.props.children;
-    var keys = [];
-    keys.length = children.length;
-
-    for(var i = 0; i < children.length; i++) {
-      keys[i] = children[i].props.key;
-    }
-
-    // console.timeEnd('keys')
-    return keys;
+  componentWillMount: function() {
+    this.perfs = [];
+    this.lastListCount = 0;
+    this.updateHeights();
   },
 
   componentDidMount: function() {

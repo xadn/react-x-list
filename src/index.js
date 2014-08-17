@@ -4,26 +4,33 @@ var React = require('react/addons'),
     Chance = require('chance'),
     chance = new Chance();
 
+var ListItem = React.createClass({
+  shouldComponentUpdate: function() {
+    return false;
+  },
+
+  render: function() {
+    var item = this.props.item;
+
+    return (
+      <li onWheel={this.props.onWheel}>
+        <div>{item.id}</div>
+        <div>{item.name}</div>
+      </li>
+    );
+  }
+});
+
 React.renderComponent(
   <div>
     <FiniteList>
       {generateItems(200).map(function(item) {
-        return (
-          <li key={item.id}>
-            <div>{item.id}</div>
-            <div>{item.name}</div>
-          </li>
-        );
+        return <ListItem key={item.id} item={item} />;
       })}
     </FiniteList>
     <FiniteList>
       {generateItems(5000).map(function(item) {
-        return (
-          <li key={item.id}>
-            <div>{item.id}</div>
-            <div>{item.name}</div>
-          </li>
-        );
+        return <ListItem key={item.id} item={item} />;
       })}
     </FiniteList>
   </div>, document.getElementById('main'));
