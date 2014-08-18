@@ -6,6 +6,9 @@ goog.require('goog.array');
 
 var cloneWithProps = React.addons.cloneWithProps;
 
+var SCROLL_DIR_UP = 'up';
+var SCROLL_DIR_DOWN = 'down';
+
 function childMetadataAtViewportStart(children, metadata, viewportStart) {
   while(children.length > 1) {
     var middleIndex = Math.floor(children.length / 2);
@@ -58,7 +61,13 @@ ris.FiniteList = React.createClass({
       scrollHeight: 0,
       isScrollingUp: true,
       lastScrolledKey: NaN,
-      childrenMetadata: {}
+      childrenMetadata: {},
+
+      viewportTop: 0,
+      viewportBottom: 20,
+      treadTop: 0,
+      treadBottom: 20,
+      scrollDirection: SCROLL_DIR_UP,
     };
   },
 
