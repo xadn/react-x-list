@@ -81,10 +81,22 @@ ris.FiniteList = React.createClass({
     var newListMax = (Math.ceil((viewportEnd - viewportStart) / defaultHeight) + 3);
     this.listMax = Math.min(Math.max(newListMax, this.listMax), children.length)|0;
 
+    // var topMetadata = childMetadataAtViewportStart(children.slice(0), childrenMetadata, viewportStart)
+    var topMetadata;
+    if (this.state.topKey) {
+      topMetadata = childrenMetadata[this.state.topKey];
+    } else {
+      topMetadata = childMetadataAtViewportStart(children.slice(0), childrenMetadata, viewportStart);
+    }
 
-    var topMetadata = childMetadataAtViewportStart(children.slice(0), childrenMetadata, viewportStart)
+    var bottomMetadata;
+    if (this.state.bottomKey) {
+      bottomMetadata = childrenMetadata[this.state.bottomKey];
+    } else {
+      bottomMetadata = childMetadataAtViewportEnd(children.slice(topMetadata.index, children.length), childrenMetadata, viewportEnd)
+    }
 
-    var bottomMetadata = childMetadataAtViewportEnd(children.slice(topMetadata.index, children.length), childrenMetadata, viewportEnd)
+    // var bottomMetadata = childrenMetadata[this.state.bottomKey];
 
     var newBottomIndex = bottomMetadata.index + (this.listMax - (bottomMetadata.index - topMetadata.index));
     newBottomIndex = Math.min(newBottomIndex, children.length - 1);
@@ -176,7 +188,21 @@ ris.FiniteList = React.createClass({
   },
 
   shouldComponentUpdate: function(nextProps, nextState) {
-    return !_.isEqual(this.props, nextProps) || !_.isEqual(this.state, nextState);
+    // console.time('shouldComponentUpdate');
+
+    var shouldUpdate = false ||
+      this.state.topKey !== nextState.topKey ||
+      this.state.bottomKey !== nextState.bottomKey;
+
+    if (this.state.topKey && this.state.bottomKey) {
+      shouldUpdate = shouldUpdate || !_.isEqual(
+        _.pluck(_.pluck(this.props.children.slice(this.state.topKey.index, this.state.bottomKey), 'props'), 'key'),
+        _.pluck(_.pluck(nextProps.children.slice(this.state.topKey.index, this.state.bottomKey), 'props'), 'key')
+      );
+    }
+
+    // console.timeEnd('shouldComponentUpdate');
+    return shouldUpdate;
   },
 
   setLastScrolledKey: function(key) {
@@ -269,12 +295,24 @@ ris.FiniteList = React.createClass({
       isScrollingUp = false;
     }
 
+    var height = this.state.height;
+    var padding = this.props.padding;
+    var viewportStart = Math.max(scrollTop - padding, 0);
+    var viewportEnd = Math.min(scrollTop + height + padding, this.state.scrollHeight);
+    var childrenMetadata = this.state.childrenMetadata;
+    var children = this.props.children;
+
+    var topMetadata = childMetadataAtViewportStart(children.slice(0), childrenMetadata, viewportStart)
+    var bottomMetadata = childMetadataAtViewportEnd(children.slice(topMetadata.index, children.length), childrenMetadata, viewportEnd)
+
     this.setState({
       isScrollingUp: isScrollingUp,
       scrollTop: scrollTop,
-      scrollHeight: scrollHeight
+      scrollHeight: scrollHeight,
+      topKey: topMetadata.key,
+      bottomKey: bottomMetadata.key
     });
-  }
+  },
 });
 
 goog.exportSymbol('ris.finite_list', ris.finite_list);
