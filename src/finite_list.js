@@ -10,78 +10,109 @@ var SCROLL_DIR_UP = 'up';
 var SCROLL_DIR_DOWN = 'down';
 
 function childMetadataAtViewportStart(children, metadata, viewportStart) {
-  while(children.length > 1) {
-    var middleIndex = Math.floor(children.length / 2);
+  var leftIndex = 0;
+  var rightIndex = children.length - 1;
+  var middleIndex = 0;
+
+  while(rightIndex - leftIndex > 1) {
+    var middleIndex = Math.floor(((rightIndex - leftIndex) / 2) + leftIndex);
     var child = children[middleIndex];
     var childMetadata = metadata[child.props.key];
 
     if (childMetadata.top <= viewportStart) {
-      // right
-      children = children.slice(middleIndex, children.length);
+      leftIndex = middleIndex;
     } else {
-      // left
-      children = children.slice(0, middleIndex);
+      rightIndex = middleIndex;
     }
   }
 
-  return metadata[children[0].props.key];
+  return metadata[children[leftIndex].props.key];
 }
 
-function childMetadataAtViewportEnd(children, metadata, viewportEnd) {
-  while(children.length > 1) {
-    var middleIndex = Math.floor(children.length / 2);
+function childMetadataAtViewportEnd(children, metadata, viewportEnd, leftIndex) {
+  var rightIndex = children.length - 1;
+  var middleIndex = 0;
+
+  while(rightIndex - leftIndex > 1) {
+    var middleIndex = Math.floor(((rightIndex - leftIndex) / 2) + leftIndex);
     var child = children[middleIndex];
     var childMetadata = metadata[child.props.key];
 
     if (childMetadata.bottom < viewportEnd) {
-      // right
-      children = children.slice(middleIndex, children.length);
+      leftIndex = middleIndex;
     } else {
-      // left
-      children = children.slice(0, middleIndex);
+      rightIndex = middleIndex;
     }
   }
 
-  return metadata[children[0].props.key];
+  return metadata[children[rightIndex].props.key];
 }
 
-
 ris.FiniteList = React.createClass({displayName: 'FiniteList',
-  getDefaultProps: function() {
+  getDefaultProps: function getDefaultProps() {
     return {
       defaultHeight: 20,
       padding: 0
     };
   },
 
-  getInitialState: function() {
+  getInitialState: function getInitialState() {
     return {
       height: 20,
-      scrollTop: 0,
-      scrollHeight: 0,
       isScrollingUp: true,
       lastScrolledKey: NaN,
-      childrenMetadata: {},
 
-      viewportTop: 0,
-      viewportBottom: 20,
-      treadTop: 0,
-      treadBottom: 20,
-      scrollDirection: SCROLL_DIR_UP,
+      treadTopIndex: 0,
+      treadBottomIndex: 20
     };
   },
 
-  render: function() {
+  componentWillMount: function componentWillMount() {
+    this.other = {};
+    this.other.childrenMetadata = {};
+    this.other.isScrollingUp = true;
+    this.other.scrollHeight = 0;
+    this.other.scrollTop = 0;
+
+    this.lastRenderedKeys = [];
+    this.listMax = 0;
+    this.perfs = [];
+    this.lastListCount = 0;
+    this.updateHeights();
+  },
+
+  componentDidMount: function componentDidMount() {
+    this.updateHeights();
+    this.handleScroll();
+    this.setState({height: this.getDOMNode().offsetHeight});
+  },
+
+  componentWillUpdate: function componentWillUpdate() {
+    var node = this.getDOMNode();
+    this.other.scrollHeight = node.scrollHeight;
+    this.other.scrollTop = node.scrollTop;
+  },
+
+  componentDidUpdate: function componentDidUpdate() {
+    this.fixScrollPosition();
+    this.updateHeights();
+  },
+
+  shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
+    return this.state.topKey !== nextState.topKey || this.state.bottomKey !== nextState.bottomKey;
+  },
+
+  render: function render() {
     // console.time('render');
 
     var height = this.state.height;
     // var padding = Math.ceil(height / 2);
     var padding = this.props.padding;
 
-    var scrollTop = this.state.scrollTop;
+    var scrollTop = this.other.scrollTop;
     var viewportStart = Math.max(scrollTop - padding, 0);
-    var viewportEnd = Math.min(scrollTop + height + padding, this.state.scrollHeight);
-    var childrenMetadata = this.state.childrenMetadata;
+    var viewportEnd = Math.min(scrollTop + height + padding, this.other.scrollHeight);
+    var childrenMetadata = this.other.childrenMetadata;
     var defaultHeight = this.props.defaultHeight;
     var lastScrolledKey = this.state.lastScrolledKey;
     var children = this.props.children;
@@ -90,22 +121,19 @@ ris.FiniteList = React.createClass({displayName: 'FiniteList',
     var newListMax = (Math.ceil((viewportEnd - viewportStart) / defaultHeight) + 3);
     this.listMax = Math.min(Math.max(newListMax, this.listMax), children.length)|0;
 
-    // var topMetadata = childMetadataAtViewportStart(children.slice(0), childrenMetadata, viewportStart)
     var topMetadata;
     if (this.state.topKey) {
       topMetadata = childrenMetadata[this.state.topKey];
     } else {
-      topMetadata = childMetadataAtViewportStart(children.slice(0), childrenMetadata, viewportStart);
+      topMetadata = childMetadataAtViewportStart(children, childrenMetadata, viewportStart);
     }
 
     var bottomMetadata;
     if (this.state.bottomKey) {
       bottomMetadata = childrenMetadata[this.state.bottomKey];
     } else {
-      bottomMetadata = childMetadataAtViewportEnd(children.slice(topMetadata.index, children.length), childrenMetadata, viewportEnd)
+      bottomMetadata = childMetadataAtViewportEnd(children, childrenMetadata, viewportEnd, topMetadata.index)
     }
-
-    // var bottomMetadata = childrenMetadata[this.state.bottomKey];
 
     var newBottomIndex = bottomMetadata.index + (this.listMax - (bottomMetadata.index - topMetadata.index));
     newBottomIndex = Math.min(newBottomIndex, children.length - 1);
@@ -168,21 +196,6 @@ ris.FiniteList = React.createClass({displayName: 'FiniteList',
         break;
     }
 
-
-
-    // var topHeight = topMetadata.top;
-    // list.unshift(<li key='-1' style={{height: topHeight + 'px'}} />);
-
-    // var bottomHeight = this.state.calcScrollHeight - bottomMetadata.bottom;
-    // list.push(<li key='-2' style={{height: bottomHeight + 'px'}} />);
-
-
-
-    if (list.length !== this.lastListCount) {
-      this.lastListCount = list.length;
-      // console.log('listCount', this.lastListCount);
-    }
-
     var elements = (
       React.DOM.div({className: "is-panel", onScroll: this.handleScroll}, 
         React.DOM.ol({className: "is-content"}, 
@@ -191,41 +204,54 @@ ris.FiniteList = React.createClass({displayName: 'FiniteList',
       )
     );
 
-
     // console.timeEnd('render');
     return elements;
   },
 
-  shouldComponentUpdate: function(nextProps, nextState) {
-    // console.time('shouldComponentUpdate');
-
-    var shouldUpdate = false ||
-      this.state.topKey !== nextState.topKey ||
-      this.state.bottomKey !== nextState.bottomKey;
-
-    if (this.state.topKey && this.state.bottomKey) {
-      shouldUpdate = shouldUpdate || !_.isEqual(
-        _.pluck(_.pluck(this.props.children.slice(this.state.topKey.index, this.state.bottomKey), 'props'), 'key'),
-        _.pluck(_.pluck(nextProps.children.slice(this.state.topKey.index, this.state.bottomKey), 'props'), 'key')
-      );
-    }
-
-    // console.timeEnd('shouldComponentUpdate');
-    return shouldUpdate;
-  },
-
-  setLastScrolledKey: function(key) {
+  setLastScrolledKey: function setLastScrolledKey(key) {
     var self = this;
     return function() {
       self.setState({lastScrolledKey: key});
     }
   },
 
-  updateHeights: function() {
+  handleScroll: function handleScroll(e) {
+    var node = this.getDOMNode();
+    var scrollTop = node.scrollTop;
+    var scrollHeight = node.scrollHeight;
+    var isScrollingUp = true;
+
+    if (scrollTop > this.other.scrollTop) {
+      isScrollingUp = false;
+    }
+
+    var height = this.state.height;
+    var padding = this.props.padding;
+    var viewportStart = Math.max(scrollTop - padding, 0);
+    var viewportEnd = Math.min(scrollTop + height + padding, this.other.scrollHeight);
+    var childrenMetadata = this.other.childrenMetadata;
+    var children = this.props.children;
+
+    var topMetadata = childMetadataAtViewportStart(children, childrenMetadata, viewportStart);
+    var bottomMetadata = childMetadataAtViewportEnd(children, childrenMetadata, viewportEnd, topMetadata.index);
+
+    this.other.isScrollingUp = isScrollingUp;
+    this.other.scrollHeight = scrollHeight;
+    this.other.scrollTop = scrollTop;
+
+    if (this.state.topKey !== topMetadata.key || this.state.bottomKey !== bottomMetadata.key) {
+      this.setState({
+        topKey: topMetadata.key,
+        bottomKey: bottomMetadata.key
+      })
+    }
+  },
+
+  updateHeights: function updateHeights() {
     // console.time('updateHeights');
 
     var newChildrenMetadata = {};
-    var childrenMetadata = this.state.childrenMetadata;
+    var childrenMetadata = this.other.childrenMetadata;
     var children = this.props.children;
     var defaultHeight = this.props.defaultHeight;
     var refs = this.refs;
@@ -257,71 +283,25 @@ ris.FiniteList = React.createClass({displayName: 'FiniteList',
       newChildrenMetadata[key] = childMetadata;
     }
 
+    this.other.childrenMetadata = newChildrenMetadata;
+
     this.setState({
-      childrenMetadata: newChildrenMetadata,
-      height: this.isMounted() && this.getDOMNode().offsetHeight,
       calcScrollHeight: prevBottom
     });
 
     // console.timeEnd('updateHeights');
   },
 
-  componentWillMount: function() {
-    this.lastRenderedKeys = [];
-    this.listMax = 0;
-    this.perfs = [];
-    this.lastListCount = 0;
-    this.updateHeights();
-  },
-
-  componentDidMount: function() {
-    this.updateHeights();
-    this.handleScroll();
-  },
-
-  componentDidUpdate: function() {
-    if (this.state.isScrollingUp) {
+  fixScrollPosition: function fixScrollPosition() {
+    if (this.other.isScrollingUp) {
       var node = this.getDOMNode();
-      var oldScrollTop = node.scrollTop;
-      var oldScrollHeight = node.scrollHeight;
-      var newScrollTop = this.state.scrollTop + (oldScrollHeight - this.state.scrollHeight);
+      var newScrollTop = this.other.scrollTop + (node.scrollHeight - this.other.scrollHeight);
 
-      if (oldScrollTop !== newScrollTop) {
+      if (node.scrollTop !== newScrollTop) {
         node.scrollTop = newScrollTop;
       }
     }
-
-    this.updateHeights();
-  },
-
-  handleScroll: function(e) {
-    var node = this.getDOMNode();
-    var scrollTop = node.scrollTop;
-    var scrollHeight = node.scrollHeight;
-    var isScrollingUp = true;
-
-    if (scrollTop > this.state.scrollTop) {
-      isScrollingUp = false;
-    }
-
-    var height = this.state.height;
-    var padding = this.props.padding;
-    var viewportStart = Math.max(scrollTop - padding, 0);
-    var viewportEnd = Math.min(scrollTop + height + padding, this.state.scrollHeight);
-    var childrenMetadata = this.state.childrenMetadata;
-    var children = this.props.children;
-
-    var topMetadata = childMetadataAtViewportStart(children.slice(0), childrenMetadata, viewportStart)
-    var bottomMetadata = childMetadataAtViewportEnd(children.slice(topMetadata.index, children.length), childrenMetadata, viewportEnd)
-
-    this.setState({
-      isScrollingUp: isScrollingUp,
-      scrollTop: scrollTop,
-      scrollHeight: scrollHeight,
-      topKey: topMetadata.key,
-      bottomKey: bottomMetadata.key
-    });
-  },
+  }
 });
 
 goog.exportSymbol('ris.finite_list', ris.finite_list);
