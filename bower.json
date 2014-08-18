@@ -1,0 +1,11 @@
+{
+  "name": "react-infinite-scroll",
+  "version": "6.3.8",
+  "private": true,
+  "dependencies": {
+    "este-library": "git://github.com/steida/este-library.git",
+    "stylus-nib": "git://github.com/visionmedia/nib.git",
+    "lodash": "~2.4.1",
+    "chance": "~0.5.6"
+  }
+}

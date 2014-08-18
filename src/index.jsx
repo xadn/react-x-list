@@ -23,7 +23,7 @@ ris.index = function() {
     return items;
   }
 
-  var ListItem = React.createClass({displayName: 'ListItem',
+  var ListItem = React.createClass({
     shouldComponentUpdate: function() {
       return false;
     },
@@ -32,10 +32,10 @@ ris.index = function() {
       var item = this.props.item;
 
       return (
-        React.DOM.li({onWheel: this.props.onWheel}, 
-          React.DOM.div(null, item.id), 
-          React.DOM.div(null, item.name)
-        )
+        <li onWheel={this.props.onWheel}>
+          <div>{item.id}</div>
+          <div>{item.name}</div>
+        </li>
       );
     }
   });
@@ -43,18 +43,18 @@ ris.index = function() {
   console.log(chance.string());
 
   React.renderComponent(
-    React.DOM.div(null, 
-      FiniteList(null, 
-        generateItems(200).map(function(item) {
-          return ListItem({key: item.id, item: item});
-        })
-      ), 
-      FiniteList(null, 
-        generateItems(5000).map(function(item) {
-          return ListItem({key: item.id, item: item});
-        })
-      )
-    ),
+    <div>
+      <FiniteList>
+        {generateItems(200).map(function(item) {
+          return <ListItem key={item.id} item={item} />;
+        })}
+      </FiniteList>
+      <FiniteList>
+        {generateItems(5000).map(function(item) {
+          return <ListItem key={item.id} item={item} />;
+        })}
+      </FiniteList>
+    </div>,
   document.getElementById('main'));
 
 };

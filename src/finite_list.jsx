@@ -43,9 +43,12 @@ function childMetadataAtViewportEnd(children, metadata, viewportEnd) {
 }
 
 
-ris.FiniteList = React.createClass({displayName: 'FiniteList',
+ris.FiniteList = React.createClass({
   getDefaultProps: function() {
-    return {defaultHeight: 20};
+    return {
+      defaultHeight: 20,
+      padding: 0
+    };
   },
 
   getInitialState: function() {
@@ -64,7 +67,8 @@ ris.FiniteList = React.createClass({displayName: 'FiniteList',
 
     var height = this.state.height;
     // var padding = Math.ceil(height / 2);
-    var padding = 0;
+    var padding = this.props.padding;
+
     var scrollTop = this.state.scrollTop;
     var viewportStart = Math.max(scrollTop - padding, 0);
     var viewportEnd = Math.min(scrollTop + height + padding, this.state.scrollHeight);
@@ -80,9 +84,7 @@ ris.FiniteList = React.createClass({displayName: 'FiniteList',
 
     var topMetadata = childMetadataAtViewportStart(children.slice(0), childrenMetadata, viewportStart)
 
-
     var bottomMetadata = childMetadataAtViewportEnd(children.slice(topMetadata.index, children.length), childrenMetadata, viewportEnd)
-
 
     var newBottomIndex = bottomMetadata.index + (this.listMax - (bottomMetadata.index - topMetadata.index));
     newBottomIndex = Math.min(newBottomIndex, children.length - 1);
@@ -116,31 +118,31 @@ ris.FiniteList = React.createClass({displayName: 'FiniteList',
     switch (lastScrolledPosition) {
       case 'inside':
         list = [].concat(
-          React.DOM.li({key: "-1", style: {height: (topMetadata.top) + 'px'}}),
-          React.DOM.li({key: "-2", style: {height: '0'}}),
+          <li key='-1' style={{height: (topMetadata.top) + 'px'}} />,
+          <li key='-2' style={{height: '0'}} />,
           visibleChildren,
-          React.DOM.li({key: "-3", style: {height: '0'}}),
-          React.DOM.li({key: "-4", style: {height: (calcScrollHeight - bottomMetadata.bottom) + 'px'}})
+          <li key='-3' style={{height: '0'}} />,
+          <li key='-4' style={{height: (calcScrollHeight - bottomMetadata.bottom) + 'px'}} />
         );
         break;
       case 'above':
         list = [].concat(
-          React.DOM.li({key: "-1", style: {height: (lastScrolledMetadata.top) + 'px'}}),
+          <li key='-1' style={{height: (lastScrolledMetadata.top) + 'px'}} />,
           lastScrolledChild,
-          React.DOM.li({key: "-2", style: {height: topMetadata.top - lastScrolledMetadata.bottom}}),
+          <li key='-2' style={{height: topMetadata.top - lastScrolledMetadata.bottom}} />,
           visibleChildren,
-          React.DOM.li({key: "-3", style: {height: '0'}}),
-          React.DOM.li({key: "-4", style: {height: (calcScrollHeight - bottomMetadata.bottom) + 'px'}})
+          <li key='-3' style={{height: '0'}} />,
+          <li key='-4' style={{height: (calcScrollHeight - bottomMetadata.bottom) + 'px'}} />
         );
         break;
       case 'below':
         list = [].concat(
-          React.DOM.li({key: "-1", style: {height: (topMetadata.top) + 'px'}}),
-          React.DOM.li({key: "-2", style: {height: '0'}}),
+          <li key='-1' style={{height: (topMetadata.top) + 'px'}} />,
+          <li key='-2' style={{height: '0'}} />,
           visibleChildren,
-          React.DOM.li({key: "-3", style: {height: (lastScrolledMetadata.top - bottomMetadata.bottom)}}),
+          <li key='-3' style={{height: (lastScrolledMetadata.top - bottomMetadata.bottom)}} />,
           lastScrolledChild,
-          React.DOM.li({key: "-4", style: {height: (calcScrollHeight - lastScrolledMetadata.bottom) + 'px'}})
+          <li key='-4' style={{height: (calcScrollHeight - lastScrolledMetadata.bottom) + 'px'}} />
         );
         break;
     }
@@ -161,11 +163,11 @@ ris.FiniteList = React.createClass({displayName: 'FiniteList',
     }
 
     var elements = (
-      React.DOM.div({className: "is-panel", onScroll: this.handleScroll}, 
-        React.DOM.ol({className: "is-content"}, 
-          list
-        )
-      )
+      <div className='is-panel' onScroll={this.handleScroll}>
+        <ol className='is-content'>
+          {list}
+        </ol>
+      </div>
     );
 
 
