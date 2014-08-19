@@ -1,0 +1,33 @@
+<!doctype html>
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+  <title>pointerup - este.events.RoutingClickHandler</title>
+  <link href='../css/demos.css' rel='stylesheet'>
+  <!-- Pointer Events polyfill -->
+  <script src='../../../bower_components/pointerevents-polyfill/pointerevents.dev.js'></script>
+  <script src='../../../bower_components/closure-library/closure/goog/base.js'></script>
+  <script src='../../../tmp/deps.js'></script>
+  <script>
+    goog.require('este.events.RoutingClickHandler');
+  </script>
+</head>
+<body>
+  <h1>este.events.RoutingClickHandler - pointerup</h1>
+  <!--
+    Note required touch-action="none" attribute.
+    http://www.polymer-project.org/platform/pointer-events.html
+  -->
+  <a touch-action="none" href="../">link with <b>child</b></a>
+  <p>
+    Note how click is fast. Test it with touch device please.<br>
+    Read: <a href="http://blogs.telerik.com/appbuilder/posts/13-11-21/what-exactly-is.....-the-300ms-click-delay">What Exactly Is..... The 300ms Click Delay</a>.  
+    </p>
+  <pre id="console"></pre>
+  <script>
+    var handler = new este.events.RoutingClickHandler;
+    goog.events.listen(handler, 'click', function(e) {
+      document.getElementById('console').innerHTML += 'click<br>';
+    });
+  </script>
+</body>

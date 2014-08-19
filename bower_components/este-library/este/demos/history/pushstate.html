@@ -1,0 +1,89 @@
+<!doctype html>
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+  <title>pushState - este.History</title>
+  <link href='../css/demos.css' rel='stylesheet'>
+  <style>
+    a {
+      color: blue;
+    }
+    .section {
+      display: none;
+    }
+    .active {
+      display: block;
+    }
+    .shown {
+      font-weight: bold
+    }
+  </style>
+  <script src='../../../bower_components/closure-library/closure/goog/base.js'></script>
+  <script src='../../../tmp/deps.js'></script>
+  <script>
+    goog.require('este.History');
+    goog.require('goog.Uri');
+  </script>
+</head>
+<body>
+  <h1>este.History - pushState</h1>
+  <p id='links'>
+    <!-- Relative paths for demo. For app use absolute. -->
+    <a href='kittens' title='Kittens'>Kittens</a> |
+    <a href='puppies' title='Puppies'>Puppies</a> |
+    <a href='pandas' title='Pandas'>Pandas</a> |
+    <a href='bucket' title='Bucket'>Bucket</a>
+  </p>
+  <div id='kittens' class='section'>
+    <img src='http://farm4.static.flickr.com/3045/2481490798_bba0c585b4.jpg'>
+  </div>
+  <div id='puppies' class='section'>
+    <img src='http://farm4.static.flickr.com/3178/2976942142_7f5be73d21.jpg'>
+  </div>
+  <div id='pandas' class='section'>
+    <img src='http://farm1.static.flickr.com/106/303160549_49917ba1b7.jpg'>
+  </div>
+  <div id='bucket' class='section'>
+    <img src='http://farm1.static.flickr.com/146/421093356_6bbefa304e.jpg'>
+  </div>
+  <script>
+    var esteHistory = new este.History({
+      // Use pathPrefix only when app is not running in root.
+      pathPrefix: new goog.Uri(document.location.href).getPath() + '/'
+    });
+    var cur = null;
+
+    var updateUI = function(e) {
+      var token = e.token || 'kittens';
+      console.log('token: ' + token);
+
+      var id = token;
+      var next = document.getElementById(id);
+      if (!next) return;
+
+      if (cur)
+        document.getElementById(cur).className = 'section';
+      next.className = 'section active';
+      cur = id;
+
+      var anchors = document.getElementsByTagName('a');
+      for (var i = 0, l = anchors.length; i < l; i++)
+        anchors[i].className = '';
+      var el = document.querySelector('*[href="' + id + '"]');
+      el.className = 'shown';
+    }
+
+    goog.events.listen(esteHistory, 'navigate', updateUI);
+    esteHistory.setEnabled(true);
+
+    var links = document.getElementById('links');
+    goog.events.listen(links, 'click', function(e) {
+      if (e.target.tagName != 'A')
+        return;
+      e.preventDefault();
+      var token = e.target.getAttribute('href');
+      esteHistory.setToken(token);
+    });
+
+  </script>
+</body>

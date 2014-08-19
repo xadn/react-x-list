@@ -1,0 +1,24 @@
+<!doctype html>
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+  <title>click - este.events.RoutingClickHandler</title>
+  <link href='../css/demos.css' rel='stylesheet'>
+  <script src='../../../bower_components/closure-library/closure/goog/base.js'></script>
+  <script src='../../../tmp/deps.js'></script>
+  <script>
+    goog.require('este.events.RoutingClickHandler');
+  </script>
+</head>
+<body>
+  <h1>este.events.RoutingClickHandler - click</h1>
+  <a href="../">link with <b>child</b></a>
+  <p>Note how handler detects click inside link.</p>
+  <pre id="console"></pre>
+  <script>
+    var handler = new este.events.RoutingClickHandler;
+    goog.events.listen(handler, 'click', function(e) {
+      document.getElementById('console').innerHTML += 'click<br>';
+    });
+  </script>
+</body>

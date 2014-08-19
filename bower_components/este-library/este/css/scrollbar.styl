@@ -1,0 +1,111 @@
+// Wrap content to hide native scrollbars. This element is used as a container
+// for scrollable content and custom scrollbars.
+.este-scrollbar
+  position relative
+  // Overflow hidden to hide native scrollbars.
+  overflow hidden
+
+  // Scrollable content.
+  > .este-scrollbar-content
+    // Stretch content to its positioned parent size. Btw, this fixes nasty
+    // webkit issue with scrollable hidden content.
+    position absolute
+    top 0
+    bottom 0
+    left 0
+    // Is automatically overriden for browsers (IE, Gecko, Win Chrome) with
+    // scrollbars with real width.
+    right 0
+    // Always overflow scroll for touch devices.
+    overflow scroll
+    // Overflow none to have same look before and after scrollbars lazy
+    // decoration. It will be changed to scroll after decoration.
+    html.e-ua-device-desktop &
+      overflow hidden
+    // Always prefer native scrollbars on touch devices.
+    overflow-scrolling touch
+
+    // Apple Lion+ shows zero width scrollbars over content so hide them.
+    html.e-ua-platform-mac.e-ua-engine-webkit &
+      &::-webkit-scrollbar
+        visibility hidden
+
+  > .goog-slider-vertical
+  > .goog-slider-horizontal
+    position absolute
+    z-index 1
+    opacity 0
+    transition opacity .2s, width .2s, height .2s
+    transition-delay 0, .2s, .2s
+    transition-timing-function ease-out
+
+    &.este-scrollbar-shown
+      opacity 1
+      transition opacity 0, width .2s, height .2s
+
+    &.este-scrollbar-shown-bg
+      &:before
+        content ""
+        position absolute
+        left 0
+        right 0
+        top 0
+        bottom 0
+        background-color #fff
+        opacity .3
+
+      &.goog-slider-vertical
+        border-left solid 1px rgba(0, 0, 0, .1)
+
+      &.goog-slider-horizontal
+        border-top solid 1px rgba(0, 0, 0, .1)
+
+    // Closure sliders are focusable for key navigation by default.
+    &:focus
+      // Prevent default Webkit focus outline.
+      outline none
+
+    > .goog-slider-thumb
+      position absolute
+      overflow hidden
+      opacity .5
+
+      &:after
+        position absolute
+        left 2px
+        right 2px
+        top 2px
+        bottom 2px
+        background-color #000
+        border-radius 7px
+        content ""
+
+  > .goog-slider-vertical
+    top 0
+    right 0
+    bottom 0
+    width 11px
+
+    &.este-scrollbar-shown-bg
+      width 15px
+
+    > .goog-slider-thumb
+      left 0
+      width 100%
+      // Same as Apple Mountain Lion
+      min-height 28px
+
+  > .goog-slider-horizontal
+    left 0
+    bottom 0
+    right 0
+    height 11px
+
+    &.este-scrollbar-shown-bg
+      height 15px
+
+    > .goog-slider-thumb
+      top 0
+      height 100%
+      // Same as Apple Mountain Lion
+      min-width 28px

@@ -1,0 +1,34 @@
+<!doctype html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>este.dom.isRoutingClick</title>
+  <link href="../css/demos.css" rel="stylesheet">
+  <script src='../../../bower_components/closure-library/closure/goog/base.js'></script>
+  <script src='../../../tmp/deps.js'></script>
+  <script>
+    goog.require('este.dom');
+    goog.require('goog.events');
+  </script>
+</head>
+<body>
+  <h1>este.dom.isRoutingClick</h1>
+  <p>
+    este.dom.isRoutingClick detects clicks for client side routing.<br>
+    It means: primary mouse button, no keys, no target, not x-domain.
+  </p>
+  <ul>
+    <li><a href="#foo">#foo</a></li>
+    <li><a target="_blank" href="#foo">#blank-target</a> (ignored because target attr)</li>
+    <li><a href="http://google.com">http://google.com</a> (external links are ignored too)</li>
+  </ul>
+  <pre id="output"></pre>
+  <script>
+    goog.events.listen(document, 'click', function(e) {
+      if (este.dom.isRoutingClick(e)) {
+        e.preventDefault();
+        output.innerHTML += 'Routing click detected.<br>';
+      }
+    });
+  </script>
+</body>

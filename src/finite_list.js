@@ -106,7 +106,6 @@ ris.FiniteList = React.createClass({displayName: 'FiniteList',
     // console.time('render');
 
     var height = this.state.height;
-    // var padding = Math.ceil(height / 2);
     var padding = this.props.padding;
 
     var scrollTop = this.other.scrollTop;
