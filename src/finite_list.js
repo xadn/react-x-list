@@ -215,6 +215,7 @@ ris.FiniteList = React.createClass({displayName: 'FiniteList',
   },
 
   handleScroll: function handleScroll(e) {
+    // console.time('handleScroll')
     var node = this.getDOMNode();
     var scrollTop = node.scrollTop;
     var scrollHeight = node.scrollHeight;
@@ -244,6 +245,7 @@ ris.FiniteList = React.createClass({displayName: 'FiniteList',
         bottomKey: bottomMetadata.key
       })
     }
+    // console.timeEnd('handleScroll')
   },
 
   updateHeights: function updateHeights() {
