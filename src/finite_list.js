@@ -1,8 +1,7 @@
 /** @jsx React.DOM */
 
-goog.provide('ris.FiniteList');
-goog.require('_');
-goog.require('goog.array');
+var _ = require('lodash');
+var React = require('react/addons');
 
 var cloneWithProps = React.addons.cloneWithProps;
 
@@ -48,7 +47,7 @@ function childMetadataAtViewportEnd(children, metadata, viewportEnd, leftIndex) 
   return metadata[children[rightIndex].props.key];
 }
 
-ris.FiniteList = React.createClass({displayName: 'FiniteList',
+var FiniteList = React.createClass({
   getDefaultProps: function getDefaultProps() {
     return {
       defaultHeight: 20,
@@ -166,41 +165,41 @@ ris.FiniteList = React.createClass({displayName: 'FiniteList',
     switch (lastScrolledPosition) {
       case 'inside':
         list = [].concat(
-          React.DOM.li({key: "-1", style: {height: (topMetadata.top) + 'px'}}),
-          React.DOM.li({key: "-2", style: {height: '0'}}),
+          <li key='-1' style={{height: (topMetadata.top) + 'px'}} />,
+          <li key='-2' style={{height: '0'}} />,
           visibleChildren,
-          React.DOM.li({key: "-3", style: {height: '0'}}),
-          React.DOM.li({key: "-4", style: {height: (calcScrollHeight - bottomMetadata.bottom) + 'px'}})
+          <li key='-3' style={{height: '0'}} />,
+          <li key='-4' style={{height: (calcScrollHeight - bottomMetadata.bottom) + 'px'}} />
         );
         break;
       case 'above':
         list = [].concat(
-          React.DOM.li({key: "-1", style: {height: (lastScrolledMetadata.top) + 'px'}}),
+          <li key='-1' style={{height: (lastScrolledMetadata.top) + 'px'}} />,
           lastScrolledChild,
-          React.DOM.li({key: "-2", style: {height: topMetadata.top - lastScrolledMetadata.bottom}}),
+          <li key='-2' style={{height: topMetadata.top - lastScrolledMetadata.bottom}} />,
           visibleChildren,
-          React.DOM.li({key: "-3", style: {height: '0'}}),
-          React.DOM.li({key: "-4", style: {height: (calcScrollHeight - bottomMetadata.bottom) + 'px'}})
+          <li key='-3' style={{height: '0'}} />,
+          <li key='-4' style={{height: (calcScrollHeight - bottomMetadata.bottom) + 'px'}} />
         );
         break;
       case 'below':
         list = [].concat(
-          React.DOM.li({key: "-1", style: {height: (topMetadata.top) + 'px'}}),
-          React.DOM.li({key: "-2", style: {height: '0'}}),
+          <li key='-1' style={{height: (topMetadata.top) + 'px'}} />,
+          <li key='-2' style={{height: '0'}} />,
           visibleChildren,
-          React.DOM.li({key: "-3", style: {height: (lastScrolledMetadata.top - bottomMetadata.bottom)}}),
+          <li key='-3' style={{height: (lastScrolledMetadata.top - bottomMetadata.bottom)}} />,
           lastScrolledChild,
-          React.DOM.li({key: "-4", style: {height: (calcScrollHeight - lastScrolledMetadata.bottom) + 'px'}})
+          <li key='-4' style={{height: (calcScrollHeight - lastScrolledMetadata.bottom) + 'px'}} />
         );
         break;
     }
 
     var elements = (
-      React.DOM.div({className: "is-panel", onScroll: this.handleScroll}, 
-        React.DOM.ol({className: "is-content"}, 
-          list
-        )
-      )
+      <div className='is-panel' onScroll={this.handleScroll}>
+        <ol className='is-content'>
+          {list}
+        </ol>
+      </div>
     );
 
     // console.timeEnd('render');
@@ -305,4 +304,4 @@ ris.FiniteList = React.createClass({displayName: 'FiniteList',
   }
 });
 
-goog.exportSymbol('ris.finite_list', ris.finite_list);
+module.exports = FiniteList;

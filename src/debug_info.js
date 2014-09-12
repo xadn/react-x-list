@@ -1,21 +1,21 @@
 /** @jsx React.DOM */
 var React = require('react/addons');
 
-var DebugInfo = React.createClass({displayName: 'DebugInfo',
+var DebugInfo = React.createClass({
   render: function() {
     return (
-      React.DOM.div({className: "is-debug-info"}, 
-        React.DOM.table(null, 
-          React.DOM.tr(null, 
-            React.DOM.td(null, "nodes:"), 
-            React.DOM.td(null, this.props.nodeCount)
-          ), 
-          React.DOM.tr(null, 
-            React.DOM.td(null, "items:"), 
-            React.DOM.td(null, this.props.itemCount)
-          )
-        )
-      )
+      <div className='is-debug-info'>
+        <table>
+          <tr>
+            <td>nodes:</td>
+            <td>{this.props.nodeCount}</td>
+          </tr>
+          <tr>
+            <td>items:</td>
+            <td>{this.props.itemCount}</td>
+          </tr>
+        </table>
+      </div>
     );
   }
 });
