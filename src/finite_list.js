@@ -1,51 +1,8 @@
 /** @jsx React.DOM */
-
 var _ = require('lodash');
 var React = require('react/addons');
-
 var cloneWithProps = React.addons.cloneWithProps;
-
-var SCROLL_DIR_UP = 'up';
-var SCROLL_DIR_DOWN = 'down';
-
-function childMetadataAtViewportStart(children, metadata, viewportStart) {
-  var leftIndex = 0;
-  var rightIndex = children.length - 1;
-  var middleIndex = 0;
-
-  while(rightIndex - leftIndex > 1) {
-    var middleIndex = Math.floor(((rightIndex - leftIndex) / 2) + leftIndex);
-    var child = children[middleIndex];
-    var childMetadata = metadata[child.props.key];
-
-    if (childMetadata.top <= viewportStart) {
-      leftIndex = middleIndex;
-    } else {
-      rightIndex = middleIndex;
-    }
-  }
-
-  return metadata[children[leftIndex].props.key];
-}
-
-function childMetadataAtViewportEnd(children, metadata, viewportEnd, leftIndex) {
-  var rightIndex = children.length - 1;
-  var middleIndex = 0;
-
-  while(rightIndex - leftIndex > 1) {
-    var middleIndex = Math.floor(((rightIndex - leftIndex) / 2) + leftIndex);
-    var child = children[middleIndex];
-    var childMetadata = metadata[child.props.key];
-
-    if (childMetadata.bottom < viewportEnd) {
-      leftIndex = middleIndex;
-    } else {
-      rightIndex = middleIndex;
-    }
-  }
-
-  return metadata[children[rightIndex].props.key];
-}
+var List = require('./finite_list_model');
 
 var FiniteList = React.createClass({
   getDefaultProps: function getDefaultProps() {
@@ -60,23 +17,21 @@ var FiniteList = React.createClass({
       height: 20,
       isScrollingUp: true,
       lastScrolledKey: NaN,
-
       treadTopIndex: 0,
-      treadBottomIndex: 20
+      treadBottomIndex: 20,
+      topIndex: 0,
+      bottomIndex: 1
     };
   },
 
   componentWillMount: function componentWillMount() {
+    this.model = new List(this.props.defaultHeight, this.props.children.length);
+
     this.other = {};
-    this.other.childrenMetadata = {};
     this.other.isScrollingUp = true;
     this.other.scrollHeight = 0;
     this.other.scrollTop = 0;
-
     this.lastRenderedKeys = [];
-    this.listMax = 0;
-    this.perfs = [];
-    this.lastListCount = 0;
     this.updateHeights();
   },
 
@@ -98,100 +53,20 @@ var FiniteList = React.createClass({
   },
 
   shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
-    return this.state.topKey !== nextState.topKey || this.state.bottomKey !== nextState.bottomKey;
+    return this.state.topIndex !== nextState.topIndex || this.state.bottomIndex !== nextState.bottomIndex;
   },
 
   render: function render() {
     // console.time('render');
-
-    var height = this.state.height;
-    var padding = this.props.padding;
-
-    var scrollTop = this.other.scrollTop;
-    var viewportStart = Math.max(scrollTop - padding, 0);
-    var viewportEnd = Math.min(scrollTop + height + padding, this.other.scrollHeight);
-    var childrenMetadata = this.other.childrenMetadata;
-    var defaultHeight = this.props.defaultHeight;
-    var lastScrolledKey = this.state.lastScrolledKey;
-    var children = this.props.children;
-    var calcScrollHeight = this.state.calcScrollHeight;
-
-    var newListMax = (Math.ceil((viewportEnd - viewportStart) / defaultHeight) + 3);
-    this.listMax = Math.min(Math.max(newListMax, this.listMax), children.length)|0;
-
-    var topMetadata;
-    if (this.state.topKey) {
-      topMetadata = childrenMetadata[this.state.topKey];
-    } else {
-      topMetadata = childMetadataAtViewportStart(children, childrenMetadata, viewportStart);
-    }
-
-    var bottomMetadata;
-    if (this.state.bottomKey) {
-      bottomMetadata = childrenMetadata[this.state.bottomKey];
-    } else {
-      bottomMetadata = childMetadataAtViewportEnd(children, childrenMetadata, viewportEnd, topMetadata.index)
-    }
-
-    var newBottomIndex = bottomMetadata.index + (this.listMax - (bottomMetadata.index - topMetadata.index));
-    newBottomIndex = Math.min(newBottomIndex, children.length - 1);
-    bottomMetadata = childrenMetadata[children[newBottomIndex].props.key];
-
-    // var visibleChildren = children.slice(topMetadata.index, bottomMetadata.index + 1);
-    var visibleChildren = children.slice(topMetadata.index, newBottomIndex + 1);
-    for (var i = 0; i < visibleChildren.length; i++) {
-      var key = visibleChildren[i].props.key;
-      visibleChildren[i] = cloneWithProps(visibleChildren[i], {key: key, ref: key, onWheel: this.setLastScrolledKey(key)});
-    }
-
-    var lastScrolledPosition = 'inside';
-    var lastScrolledMetadata = lastScrolledKey && childrenMetadata[lastScrolledKey];
-    var lastScrolledChild;
-
-    if (lastScrolledMetadata) {
-      var child = children[lastScrolledMetadata.index];
-      var key = child.props.key;
-      lastScrolledChild = cloneWithProps(child, {key: key, ref: key, onWheel: this.setLastScrolledKey(key)});
-
-      if (lastScrolledMetadata.index < topMetadata.index) {
-        lastScrolledPosition = 'above';
-      }
-      else if (lastScrolledMetadata.index > bottomMetadata.index) {
-        lastScrolledPosition = 'below';
-      }
-    }
-
     var list;
-    switch (lastScrolledPosition) {
-      case 'inside':
-        list = [].concat(
-          <li key='-1' style={{height: (topMetadata.top) + 'px'}} />,
-          <li key='-2' style={{height: '0'}} />,
-          visibleChildren,
-          <li key='-3' style={{height: '0'}} />,
-          <li key='-4' style={{height: (calcScrollHeight - bottomMetadata.bottom) + 'px'}} />
-        );
-        break;
-      case 'above':
-        list = [].concat(
-          <li key='-1' style={{height: (lastScrolledMetadata.top) + 'px'}} />,
-          lastScrolledChild,
-          <li key='-2' style={{height: topMetadata.top - lastScrolledMetadata.bottom}} />,
-          visibleChildren,
-          <li key='-3' style={{height: '0'}} />,
-          <li key='-4' style={{height: (calcScrollHeight - bottomMetadata.bottom) + 'px'}} />
-        );
-        break;
-      case 'below':
-        list = [].concat(
-          <li key='-1' style={{height: (topMetadata.top) + 'px'}} />,
-          <li key='-2' style={{height: '0'}} />,
-          visibleChildren,
-          <li key='-3' style={{height: (lastScrolledMetadata.top - bottomMetadata.bottom)}} />,
-          lastScrolledChild,
-          <li key='-4' style={{height: (calcScrollHeight - lastScrolledMetadata.bottom) + 'px'}} />
-        );
-        break;
+
+    if (this.state.lastScrolledIndex && this.state.lastScrolledIndex < this.state.topIndex) {
+      list = this.renderListWithScrolledChildAbove();
+    }
+    else if (this.state.lastScrolledIndex && this.state.lastScrolledIndex > this.state.bottomIndex) {
+      list = this.renderListWithScrolledChildBelow();
+    } else {
+      list = this.renderListWithoutScrolledChild();
     }
 
     var elements = (
@@ -206,11 +81,77 @@ var FiniteList = React.createClass({
     return elements;
   },
 
+  renderListWithoutScrolledChild: function(visibleChildren) {
+    return Array.prototype.concat(
+      <li key='-1' style={{height: this.model.top[this.state.topIndex] + 'px'}} />,
+      <li key='-2' style={{height: '0'}} />,
+      this.childrenInViewport(),
+      <li key='-3' style={{height: '0'}} />,
+      <li key='-4' style={{height: (this.model.totalHeight() - this.model.bottom[this.state.bottomIndex]) + 'px'}} />
+    );
+  },
+
+  renderListWithScrolledChildAbove: function(visibleChildren) {
+    var child = this.props.children[this.state.lastScrolledIndex];
+    var key = child.props.key;
+
+    return Array.prototype.concat(
+      <li key='-1' style={{height: this.model.top[this.state.indexOf] + 'px'}} />,
+      cloneWithProps(child, {key: key, ref: key, onWheel: this.setLastScrolledKey(key)}),
+      <li key='-2' style={{height: (this.model.top[this.state.topIndex] - this.model.bottom[this.state.lastScrolledIndex]) + 'px'}} />,
+      this.childrenInViewport(),
+      <li key='-3' style={{height: '0'}} />,
+      <li key='-4' style={{height: (this.model.totalHeight() - this.model.bottom[this.state.bottomIndex]) + 'px'}} />
+    );
+  },
+
+  renderListWithScrolledChildBelow: function(visibleChildren) {
+    var child = this.props.children[this.state.lastScrolledIndex];
+    var key = child.props.key;
+
+    return Array.prototype.concat(
+      <li key='-1' style={{height: this.model.top[this.state.topIndex] + 'px'}} />,
+      <li key='-2' style={{height: '0'}} />,
+      this.childrenInViewport(),
+      <li key='-3' style={{height: (this.model.top[this.state.lastScrolledIndex] - this.model.bottom[this.state.bottomIndex])}} />,
+      cloneWithProps(child, {key: key, ref: key, onWheel: this.setLastScrolledKey(key)}),
+      <li key='-4' style={{height: (this.model.totalHeight() - this.model.bottom[this.state.lastScrolledIndex]) + 'px'}} />
+    );
+  },
+
+  childrenInViewport: function() {
+    var children = this.props.children.slice(this.state.topIndex, this.state.bottomIndex + 1);
+
+    for (var i = 0; i < children.length; i++) {
+      var key = children[i].props.key;
+      children[i] = cloneWithProps(children[i], {key: key, ref: key, onWheel: this.setLastScrolledKey(key)});
+    }
+
+    return children;
+  },
+
   setLastScrolledKey: function setLastScrolledKey(key) {
     var self = this;
     return function() {
-      self.setState({lastScrolledKey: key});
+      // console.time('setLastScrolledKey')
+      if (key !== self.state.lastScrolledKey) {
+        self.setState({
+          lastScrolledKey: key,
+          lastScrolledIndex: self.indexOfKey(key)
+        });
+      }
+      // console.timeEnd('setLastScrolledKey')
     }
+  },
+
+  indexOfKey: function(key) {
+    var children = this.props.children;
+
+    for (var i = 0; i < children.length; i++) {
+      if (children[i].props.key === key) { return i; }
+    }
+
+    return -1;
   },
 
   handleScroll: function handleScroll(e) {
@@ -218,77 +159,45 @@ var FiniteList = React.createClass({
     var node = this.getDOMNode();
     var scrollTop = node.scrollTop;
     var scrollHeight = node.scrollHeight;
-    var isScrollingUp = true;
+    var offsetHeight = node.offsetHeight;
 
+    var isScrollingUp = true;
     if (scrollTop > this.other.scrollTop) {
       isScrollingUp = false;
     }
-
-    var height = this.state.height;
-    var padding = this.props.padding;
-    var viewportStart = Math.max(scrollTop - padding, 0);
-    var viewportEnd = Math.min(scrollTop + height + padding, this.other.scrollHeight);
-    var childrenMetadata = this.other.childrenMetadata;
-    var children = this.props.children;
-
-    var topMetadata = childMetadataAtViewportStart(children, childrenMetadata, viewportStart);
-    var bottomMetadata = childMetadataAtViewportEnd(children, childrenMetadata, viewportEnd, topMetadata.index);
 
     this.other.isScrollingUp = isScrollingUp;
     this.other.scrollHeight = scrollHeight;
     this.other.scrollTop = scrollTop;
 
-    if (this.state.topKey !== topMetadata.key || this.state.bottomKey !== bottomMetadata.key) {
+    var topIndex = this.model.indexOfViewportTop(scrollTop);
+    var bottomIndex = this.model.indexOfViewportBottom(scrollTop + offsetHeight, topIndex);
+
+    if (this.state.topIndex !== topIndex || this.state.bottomIndex !== bottomIndex) {
       this.setState({
-        topKey: topMetadata.key,
-        bottomKey: bottomMetadata.key
-      })
+        topIndex: topIndex,
+        bottomIndex: bottomIndex
+      });
     }
+
     // console.timeEnd('handleScroll')
   },
 
   updateHeights: function updateHeights() {
     // console.time('updateHeights');
-
-    var newChildrenMetadata = {};
-    var childrenMetadata = this.other.childrenMetadata;
     var children = this.props.children;
-    var defaultHeight = this.props.defaultHeight;
     var refs = this.refs;
-    var prevBottom = 0;
 
-    for(var i = 0; i < children.length; i++) {
-      var childMetadata;
-      var key = children[i].props.key;
-
-      if (childrenMetadata[key]) {
-        childMetadata = childrenMetadata[key];
-      } else {
-        childMetadata = {
-          key: key,
-          height: defaultHeight
-        };
-      }
-
-      childMetadata.top = prevBottom;
+    for(var j = 0; j < children.length; j++) {
+      var key = children[j].props.key;
 
       if (refs[key]) {
-        childMetadata.height = refs[key].getDOMNode().offsetHeight;
+        this.model.updateHeight(j, refs[key].getDOMNode().offsetHeight);
       }
-
-      childMetadata.bottom = childMetadata.top + childMetadata.height;
-      childMetadata.index = i;
-      prevBottom = childMetadata.bottom;
-
-      newChildrenMetadata[key] = childMetadata;
     }
 
-    this.other.childrenMetadata = newChildrenMetadata;
-
-    this.setState({
-      calcScrollHeight: prevBottom
-    });
-
+    this.model.commit();
+    this.setState({calcScrollHeight: this.model.totalHeight()});
     // console.timeEnd('updateHeights');
   },
 

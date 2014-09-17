@@ -15,6 +15,7 @@ html {
   float: left;
   margin-left: 5px;
   overflow-y: scroll;
+  will-change: scroll-position;
 }
 
 .is-content {

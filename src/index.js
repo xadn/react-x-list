@@ -38,13 +38,13 @@ var ListItem = React.createClass({
 
 console.log(chance.string());
 
+    // <FiniteList>
+    //   {generateItems(200).map(function(item) {
+    //     return <ListItem key={item.id} item={item} />;
+    //   })}
+    // </FiniteList>
 React.renderComponent(
   <div>
-    <FiniteList>
-      {generateItems(200).map(function(item) {
-        return <ListItem key={item.id} item={item} />;
-      })}
-    </FiniteList>
     <FiniteList>
       {generateItems(5000).map(function(item) {
         return <ListItem key={item.id} item={item} />;
