@@ -12,10 +12,14 @@ var ItemWrapper = React.createClass({
     };
 
     return (
-      <li className='is-item' style={style} onWheel={this.props.onWheel}>
+      <li className='is-item' style={style} onWheel={this.handleWheel}>
         {this.props.children}
       </li>
     );
+  },
+
+  handleWheel: function(e) {
+    this.props.onWheel(this.props.index, e);
   }
 });
 

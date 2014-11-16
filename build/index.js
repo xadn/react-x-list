@@ -28488,10 +28488,14 @@ var ItemWrapper = React.createClass({displayName: 'ItemWrapper',
     };
 
     return (
-      React.createElement("li", {className: "is-item", style: style, onWheel: this.props.onWheel}, 
+      React.createElement("li", {className: "is-item", style: style, onWheel: this.handleWheel}, 
         this.props.children
       )
     );
+  },
+
+  handleWheel: function(e) {
+    this.props.onWheel(this.props.index, e);
   }
 });
 
@@ -28518,9 +28522,9 @@ var List = React.createClass({displayName: 'List',
       lastVisible: 1,
       scrollHeight: 0,
       scrollTop: 0,
-      topOf: null,
-      bottomOf: null,
-      heightOf: null
+      topOf:    new Uint32Array(0),
+      bottomOf: new Uint32Array(0),
+      heightOf: new Uint32Array(0)
     };
   },
 
@@ -28547,11 +28551,8 @@ var List = React.createClass({displayName: 'List',
     this.setState(this.calculateVisible(this.saveHeights({})));
   },
 
-  handleWheel: function(index) {
-    var self = this;
-    return function(e) {
-      self.setState({lastScrolled: index, isScrollingUp: e.deltaY < 0});
-    }
+  handleWheel: function(index, e) {
+    this.setState({lastScrolled: index, isScrollingUp: e.deltaY < 0});
   },
 
   handleScroll: function() {
@@ -28605,7 +28606,8 @@ var List = React.createClass({displayName: 'List',
       React.createElement(ItemWrapper, {
         key: key, 
         ref: key, 
-        onWheel: this.handleWheel(index), 
+        index: index, 
+        onWheel: this.handleWheel, 
         offsetTop: this.state.topOf[index], 
         visible: this.state.heightOf[index] !== this.props.defaultHeight}, 
         child
@@ -28622,7 +28624,6 @@ var List = React.createClass({displayName: 'List',
     nextState.scrollTop = viewportStart;
     nextState.firstVisible = this.getFirstVisible(viewportStart);
     nextState.lastVisible = this.getLastVisible(viewportEnd, nextState.firstVisible)
-
     return nextState;
   },
 
@@ -28776,7 +28777,7 @@ module.exports = List;
 
 var Utils = {
   copyRange: function(destination, source, start, end) {
-    for (var i = start; i < end; i++) {destination
+    for (var i = start; i < end; i++) {
       destination[i] = source[i];
     }
   }
