@@ -21866,16 +21866,14 @@ var List = React.createClass({displayName: 'List',
   initializeHeights: function(nextState) {
     var len = this.props.children.length;
     var defaultHeight = this.props.defaultHeight;
-    var prevBottom = 0;
     var heightOf = new Uint32Array(len);
     var topOf    = new Uint32Array(len);
     var bottomOf = new Uint32Array(len);
 
     for (var i = 0; i < len; i++) {
       heightOf[i] = defaultHeight;
-      topOf[i]    = prevBottom;
-      bottomOf[i] = topOf[i] + heightOf[i];
-      prevBottom  = bottomOf[i];
+      topOf[i]    = defaultHeight * i;
+      bottomOf[i] = defaultHeight * i + defaultHeight;
     }
 
     nextState.heightOf = heightOf;
@@ -21902,6 +21900,7 @@ var List = React.createClass({displayName: 'List',
     var topOf    = new Uint32Array(len);
     var bottomOf = new Uint32Array(len);
 
+    // Top of the list to somewhere in the viewport - copy the previous attributes
     Utils.copyRange(heightOf, this.state.heightOf, 0, firstChanged);
     Utils.copyRange(topOf,    this.state.topOf,    0, firstChanged);
     Utils.copyRange(bottomOf, this.state.bottomOf, 0, firstChanged);
@@ -21910,6 +21909,7 @@ var List = React.createClass({displayName: 'List',
       prevBottom = bottomOf[firstChanged - 1];
     }
 
+    // Within the viewport - grab the attributes from the DOM
     for (var visibleChild = firstChanged; visibleChild < lastVisible + 1; visibleChild++) {
       var key = children[visibleChild].key;
       heightOf[visibleChild] = refs[key].getDOMNode().offsetHeight;
@@ -21918,8 +21918,9 @@ var List = React.createClass({displayName: 'List',
       prevBottom             = bottomOf[visibleChild];
     }
 
+    // Below the viewport - copy attributes and calculate cascading changes
     for (var child = lastVisible + 1; child < len; child++) {
-      heightOf[child] = this.state.heightOf[child] || defaultHeight;
+      heightOf[child] = prevHeightOf[child] || defaultHeight;
       topOf[child]    = prevBottom;
       bottomOf[child] = topOf[child] + heightOf[child];
       prevBottom      = bottomOf[child];
