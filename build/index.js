@@ -28505,7 +28505,7 @@ var reactCloneWithProps = React.addons.cloneWithProps;
 var Model = require('./model');
 var ItemWrapper = require('./item_wrapper');
 
-var FiniteList = React.createClass({displayName: 'FiniteList',
+var List = React.createClass({displayName: 'List',
   getDefaultProps: function getDefaultProps() {
     return {
       defaultHeight: 20,
@@ -28532,11 +28532,11 @@ var FiniteList = React.createClass({displayName: 'FiniteList',
     this.other.scrollHeight = 0;
     this.other.scrollTop = 0;
     this.lastRenderedKeys = [];
-    this.updateHeights();
+    this.saveHeights();
   },
 
   componentDidMount: function componentDidMount() {
-    this.updateHeights();
+    this.saveHeights();
     this.calculateVisible();
     this.setState({height: this.getDOMNode().offsetHeight});
   },
@@ -28549,7 +28549,7 @@ var FiniteList = React.createClass({displayName: 'FiniteList',
 
   componentDidUpdate: function componentDidUpdate() {
     this.fixScrollPosition();
-    this.updateHeights();
+    this.saveHeights();
     this.calculateVisible();
   },
 
@@ -28558,59 +28558,35 @@ var FiniteList = React.createClass({displayName: 'FiniteList',
   },
 
   render: function render() {
-    // console.time('render');
-    var topOf = this.model.top;
-    var bottomOf = this.model.bottom;
-    var veryBottom = this.model.totalHeight();
     var firstVisible = this.state.topIndex;
     var lastVisible = this.state.bottomIndex;
     var lastScrolled = this.indexOfKey(this.state.lastScrolledKey);
+    var child = firstVisible;
+    var index = 0;
+    var length = lastVisible - firstVisible + 2;
+    var visibleChildren = [];
+    visibleChildren.length = length;
 
     if (lastScrolled >= 0 && firstVisible > lastScrolled) {
-      return (
-        React.createElement("div", {className: "is-list-container", onScroll: this.handleScroll}, 
-          React.createElement("ul", {className: "is-list", style: {height: veryBottom}}, 
-            [this.wrapChild(lastScrolled)].concat(this.visibleChildren())
-          )
+      visibleChildren[0] = this.wrapChild(lastScrolled);
+      index = 1;
+    } else if (lastScrolled > lastVisible) {
+      visibleChildren[length - 1] = this.wrapChild(lastScrolled);
+    }
+
+    while (child <= lastVisible) {
+      visibleChildren[index] = this.wrapChild(child);
+      child++;
+      index++;
+    }
+
+    return (
+      React.createElement("div", {className: "is-list-container", onScroll: this.handleScroll}, 
+        React.createElement("ul", {className: "is-list", style: {height: this.model.totalHeight()}}, 
+          visibleChildren
         )
-      );
-    }
-    else if (lastScrolled > lastVisible) {
-      return (
-        React.createElement("div", {className: "is-list-container", onScroll: this.handleScroll}, 
-          React.createElement("ul", {className: "is-list", style: {height: veryBottom}}, 
-            this.visibleChildren().concat(this.wrapChild(lastScrolled))
-          )
-        )
-      );
-    }
-    else {
-      return (
-        React.createElement("div", {className: "is-list-container", onScroll: this.handleScroll}, 
-          React.createElement("ul", {className: "is-list", style: {height: veryBottom}}, 
-            this.visibleChildren()
-          )
-        )
-      );
-    }
-  },
-
-  visibleChildren: function visibleChildren() {
-    var bottomIndex = this.state.bottomIndex;
-    var topIndex = this.state.topIndex;
-    var wrappedChildren = [];
-    wrappedChildren.length = bottomIndex - topIndex;
-
-    var childrenIndex = topIndex;
-    var clonesIndex = 0;
-
-    while (childrenIndex <= bottomIndex) {
-      wrappedChildren[clonesIndex] = this.wrapChild(childrenIndex);
-      childrenIndex++;
-      clonesIndex++;
-    }
-
-    return wrappedChildren;
+      )
+    );
   },
 
   wrapChild: function wrapChild(index) {
@@ -28621,7 +28597,7 @@ var FiniteList = React.createClass({displayName: 'FiniteList',
       React.createElement(ItemWrapper, {
         key: key, 
         ref: key, 
-        onWheel: this.setLastScrolledKey(key), 
+        onWheel: this.handleWheel(key), 
         offsetTop: this.model.top[index], 
         visible: this.model.height[index] !== this.props.defaultHeight}, 
         child
@@ -28629,38 +28605,20 @@ var FiniteList = React.createClass({displayName: 'FiniteList',
     );
   },
 
-  setLastScrolledKey: function setLastScrolledKey(key) {
+  handleWheel: function handleWheel(key) {
     var self = this;
     return function() {
-      // console.time('setLastScrolledKey')
       if (key !== self.state.lastScrolledKey) {
         self.setState({lastScrolledKey: key});
       }
-      // console.timeEnd('setLastScrolledKey')
     }
-  },
-
-  indexOfKey: function(key) {
-    var children = this.props.children,
-        len = children.length;
-
-    for (var i = 0; i < len; i++) {
-      if (children[i].key === key) { return i; }
-    }
-    return -1;
   },
 
   handleScroll: function handleScroll(e) {
     this.calculateVisible();
   },
 
-  startCalculating: function startCalculating() {
-    this.calculateVisible();
-    requestAnimationFrame(this.startCalculating);
-  },
-
   calculateVisible: function calculateVisible() {
-    // console.time('calculateVisible')
     var node = this.getDOMNode();
     var scrollTop = node.scrollTop;
     var scrollHeight = node.scrollHeight;
@@ -28684,15 +28642,14 @@ var FiniteList = React.createClass({displayName: 'FiniteList',
         bottomIndex: bottomIndex
       });
     }
-    // console.timeEnd('calculateVisible')
   },
 
-  updateHeights: function updateHeights() {
-    // console.time('updateHeights');
+  saveHeights: function saveHeights() {
+    // console.time('saveHeights');
     var children = this.props.children;
     var refs = this.refs;
 
-    for(var j = 0; j < children.length; j++) {
+    for (var j = 0; j < children.length; j++) {
       var key = children[j].key;
 
       if (refs[key]) {
@@ -28702,7 +28659,7 @@ var FiniteList = React.createClass({displayName: 'FiniteList',
 
     this.model.commit();
     this.setState({calcScrollHeight: this.model.totalHeight()});
-    // console.timeEnd('updateHeights');
+    // console.timeEnd('saveHeights');
   },
 
   fixScrollPosition: function fixScrollPosition() {
@@ -28714,10 +28671,20 @@ var FiniteList = React.createClass({displayName: 'FiniteList',
         node.scrollTop = newScrollTop;
       }
     }
+  },
+
+  indexOfKey: function(key) {
+    var children = this.props.children,
+        len = children.length;
+
+    for (var i = 0; i < len; i++) {
+      if (children[i].key === key) { return i; }
+    }
+    return -1;
   }
 });
 
-module.exports = FiniteList;
+module.exports = List;
 },{"./item_wrapper":166,"./model":168,"lodash":4,"react/addons":5}],168:[function(require,module,exports){
 var _ = require('lodash');
 
