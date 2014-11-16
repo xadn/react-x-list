@@ -28502,7 +28502,6 @@ module.exports = ItemWrapper;
 var _ = require('lodash');
 var React = require('react/addons');
 var reactCloneWithProps = React.addons.cloneWithProps;
-var Model = require('./model');
 var ItemWrapper = require('./item_wrapper');
 
 var List = React.createClass({displayName: 'List',
@@ -28517,13 +28516,15 @@ var List = React.createClass({displayName: 'List',
       firstVisible: 0,
       lastVisible: 1,
       scrollHeight: 0,
-      scrollTop: 0
+      scrollTop: 0,
+      topOf: null,
+      bottomOf: null,
+      heightOf: null
     };
   },
 
   componentWillMount: function() {
-    this.model = new Model(this.props.defaultHeight, this.props.children.length);
-    this.setState(this.saveHeights({}));
+    this.setState(this.initializeHeights({}));
   },
 
   componentDidMount: function() {
@@ -28559,8 +28560,8 @@ var List = React.createClass({displayName: 'List',
   shouldComponentUpdate: function(nextProps, nextState) {
     return  this.state.firstVisible !== nextState.firstVisible ||
             this.state.lastVisible !== nextState.lastVisible ||
-            this.state.calcScrollHeight !== nextState.calcScrollHeight ||
             this.state.lastScrolled !== nextState.lastScrolled ||
+            !this.areArraysEqual(this.state.heightOf, nextState.heightOf) ||
             false;
   },
 
@@ -28572,7 +28573,7 @@ var List = React.createClass({displayName: 'List',
     var index = 0;
     var length = lastVisible - firstVisible + 2;
     var visibleChildren = [];
-    visibleChildren.length = length;
+    visibleChildren.length = length|0;
 
     if (lastScrolled >= 0 && firstVisible > lastScrolled) {
       visibleChildren[0] = this.wrapChild(lastScrolled);
@@ -28589,7 +28590,7 @@ var List = React.createClass({displayName: 'List',
 
     return (
       React.createElement("div", {className: "is-list-container", onScroll: this.handleScroll}, 
-        React.createElement("ul", {className: "is-list", style: {height: this.model.totalHeight()}}, 
+        React.createElement("ul", {className: "is-list", style: {height: this.totalHeight()}}, 
           visibleChildren
         )
       )
@@ -28605,8 +28606,8 @@ var List = React.createClass({displayName: 'List',
         key: key, 
         ref: key, 
         onWheel: this.handleWheel(index), 
-        offsetTop: this.model.top[index], 
-        visible: this.model.height[index] !== this.props.defaultHeight}, 
+        offsetTop: this.state.topOf[index], 
+        visible: this.state.heightOf[index] !== this.props.defaultHeight}, 
         child
       )
     );
@@ -28614,32 +28615,59 @@ var List = React.createClass({displayName: 'List',
 
   calculateVisible: function(nextState) {
     var node = this.getDOMNode();
-    var scrollTop = node.scrollTop;
-    var scrollHeight = node.scrollHeight;
-    var offsetHeight = node.offsetHeight;
+    var viewportStart = node.scrollTop;
+    var viewportEnd = viewportStart + node.offsetHeight;
 
-    nextState.scrollHeight = scrollHeight;
-    nextState.scrollTop = scrollTop;
-    nextState.firstVisible = this.model.indexOfViewportTop(scrollTop);
-    nextState.lastVisible = this.model.indexOfViewportBottom(scrollTop + offsetHeight, nextState.firstVisible)
+    nextState.scrollHeight = node.scrollHeight;
+    nextState.scrollTop = viewportStart;
+    nextState.firstVisible = this.getFirstVisible(viewportStart);
+    nextState.lastVisible = this.getLastVisible(viewportEnd, nextState.firstVisible)
 
+    return nextState;
+  },
+
+  initializeHeights: function(nextState) {
+    var len = this.props.children.length;
+    var defaultHeight = this.props.defaultHeight;
+    var topOf = new Uint32Array(len);
+    var bottomOf = new Uint32Array(len);
+    var heightOf = new Uint32Array(len);
+    var prev = 0;
+
+    for (var i = 0; i < len; i++) {
+      heightOf[i] = defaultHeight;
+      topOf[i] = prev;
+      bottomOf[i] = topOf[i] + heightOf[i];
+      prev = bottomOf[i];
+    }
+
+    nextState.topOf = topOf;
+    nextState.bottomOf = bottomOf;
+    nextState.heightOf = heightOf;
     return nextState;
   },
 
   saveHeights: function(nextState) {
     var children = this.props.children;
+    var len = children.length;
     var refs = this.refs;
+    var defaultHeight = this.props.defaultHeight;
+    var topOf = new Uint32Array(len);
+    var bottomOf = new Uint32Array(len);
+    var heightOf = new Uint32Array(len);
+    var prev = 0;
 
-    for (var j = 0; j < children.length; j++) {
-      var key = children[j].key;
-
-      if (refs[key]) {
-        this.model.updateHeight(j, refs[key].getDOMNode().offsetHeight);
-      }
+    for (var i = 0; i < len; i++) {
+      var key = children[i].key;
+      heightOf[i] = refs[key] ? refs[key].getDOMNode().offsetHeight : (this.state.heightOf[i] || defaultHeight);
+      topOf[i] = prev;
+      bottomOf[i] = topOf[i] + heightOf[i];
+      prev = bottomOf[i];
     }
 
-    this.model.commit();
-    nextState.calcScrollHeight = this.model.totalHeight();
+    nextState.topOf = topOf;
+    nextState.bottomOf = bottomOf;
+    nextState.heightOf = heightOf;
     return nextState;
   },
 
@@ -28654,91 +28682,59 @@ var List = React.createClass({displayName: 'List',
     }
   },
 
-  indexOfKey: function(key) {
-    var children = this.props.children,
-        len = children.length;
+  totalHeight: function() {
+    return this.state.bottomOf[this.props.children.length - 1];
+  },
 
-    for (var i = 0; i < len; i++) {
-      if (children[i].key === key) { return i; }
+  getFirstVisible: function(viewportTop) {
+    var left = 0;
+    var right = this.props.children.length - 1;
+    var middle = 0;
+
+    while (right - left > 1) {
+      middle = Math.floor((right - left) / 2 + left);
+
+      if (this.state.topOf[middle] <= viewportTop) {
+        left = middle;
+      } else {
+        right = middle;
+      }
     }
-    return -1;
+
+    return left;
+  },
+
+  getLastVisible: function(viewportEnd, left) {
+    var right = this.props.children.length - 1;
+    var middle = 0;
+
+    while (right - left > 1) {
+      middle = Math.floor((right - left) / 2 + left);
+
+      if (this.state.bottomOf[middle] < viewportEnd) {
+        left = middle;
+      } else {
+        right = middle;
+      }
+    }
+
+    return right;
+  },
+
+  areArraysEqual: function(ary1, ary2) {
+    var len = ary1.length;
+
+    if (len !== ary2.length) {
+      return false;
+    }
+    for (var i = 0; i < len; i++) {
+      if (ary1[i] !== ary2[i]) {
+        return false;
+      }
+    }
+    return true;
   }
 });
 
 module.exports = List;
-},{"./item_wrapper":166,"./model":168,"lodash":4,"react/addons":5}],168:[function(require,module,exports){
-var _ = require('lodash');
-
-function List(defaultHeight, length) {
-  defaultHeight = defaultHeight|0;
-  this.length = length|0;
-  this.top = new Uint32Array(this.length);
-  this.bottom = new Uint32Array(this.length);
-  this.height = new Uint32Array(this.length);
-
-  for (var i = 0; i < this.length; i++) {
-    this.height[i] = defaultHeight;
-  }
-
-  this.commit();
-}
-
-List.prototype.updateHeight = function add(index, height) {
-  this.height[index] = height|0;
-};
-
-List.prototype.commit = function commit() {
-  this.top[0] = 0;
-  this.bottom[0] = this.height[0];
-
-  for (var i = 1; i < this.length; i++) {
-    this.top[i] = this.bottom[i - 1];
-    this.bottom[i] = (this.top[i] + this.height[i]);
-  }
-};
-
-List.prototype.totalHeight = function totalHeight() {
-  return this.bottom[this.length - 1];
-};
-
-List.prototype.indexOfViewportTop = function indexOfViewportTop(viewportTop) {
-  // console.time('indexOfViewportTop');
-  var left = 0;
-  var right = this.length - 1;
-  var middle = 0;
-
-  while (right - left > 1) {
-    middle = Math.floor((right - left) / 2 + left);
-
-    if (this.top[middle] <= viewportTop) {
-      left = middle;
-    } else {
-      right = middle;
-    }
-  }
-
-  // console.timeEnd('indexOfViewportTop');
-  return left;
-};
-
-List.prototype.indexOfViewportBottom = function indexOfViewportBottom(viewportEnd, left) {
-  // console.time('indexOfViewportBottom');
-  var right = this.length - 1;
-  var middle = 0;
-
-  while (right - left > 1) {
-    middle = Math.floor((right - left) / 2 + left);
-
-    if (this.bottom[middle] < viewportEnd) {
-      left = middle;
-    } else {
-      right = middle;
-    }
-  }
-
-  // console.timeEnd('indexOfViewportBottom');
-  return Math.min(right + 1, this.length - 1);
-}
-
-module.exports = List
-},{"lodash":4}]},{},[1]);
+},{"./item_wrapper":166,"lodash":4,"react/addons":5}]},{},[1]);
