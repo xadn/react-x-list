@@ -6,62 +6,67 @@ var Model = require('./model');
 var ItemWrapper = require('./item_wrapper');
 
 var List = React.createClass({
-  getDefaultProps: function getDefaultProps() {
-    return {
-      defaultHeight: 20,
-      padding: 0
-    };
+  getDefaultProps: function() {
+    return {defaultHeight: 20};
   },
 
-  getInitialState: function getInitialState() {
+  getInitialState: function() {
     return {
-      height: 20,
       isScrollingUp: true,
       lastScrolledKey: NaN,
-      treadTopIndex: 0,
-      treadBottomIndex: 20,
-      topIndex: 0,
-      bottomIndex: 1
+      firstVisible: 0,
+      lastVisible: 1
     };
   },
 
-  componentWillMount: function componentWillMount() {
+  componentWillMount: function() {
     this.model = new Model(this.props.defaultHeight, this.props.children.length);
     this.other = {};
-    this.other.isScrollingUp = true;
     this.other.scrollHeight = 0;
     this.other.scrollTop = 0;
-    this.lastRenderedKeys = [];
-    this.saveHeights();
+
+    this.setState(this.saveHeights({}));
   },
 
-  componentDidMount: function componentDidMount() {
-    this.saveHeights();
-    this.calculateVisible();
-    this.setState({height: this.getDOMNode().offsetHeight});
+  componentDidMount: function() {
+    this.setState(this.calculateVisible(this.saveHeights({})));
   },
 
-  componentWillUpdate: function componentWillUpdate() {
+  componentWillUpdate: function() {
     var node = this.getDOMNode();
     this.other.scrollHeight = node.scrollHeight;
     this.other.scrollTop = node.scrollTop;
   },
 
-  componentDidUpdate: function componentDidUpdate() {
+  componentDidUpdate: function() {
     this.fixScrollPosition();
-    this.saveHeights();
-    this.calculateVisible();
+    this.setState(this.calculateVisible(this.saveHeights({})));
   },
 
-  shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
-    return  this.state.topIndex !== nextState.topIndex ||
-            this.state.bottomIndex !== nextState.bottomIndex ||
-            (this.other.isScrollingUp && this.state.calcScrollHeight !== nextState.calcScrollHeight);
+  handleWheel: function(key) {
+    var self = this;
+    return function(e) {
+      self.setState({lastScrolledKey: key, isScrollingUp: e.deltaY < 0});
+    }
   },
 
-  render: function render() {
-    var firstVisible = this.state.topIndex;
-    var lastVisible = this.state.bottomIndex;
+  handleScroll: function() {
+    this.setState(this.calculateVisible({}));
+  },
+
+  shouldComponentUpdate: function(nextProps, nextState) {
+    return  this.state.firstVisible !== nextState.firstVisible ||
+            this.state.lastVisible !== nextState.lastVisible ||
+            this.state.calcScrollHeight !== nextState.calcScrollHeight ||
+            // this.state.isScrollingUp !== nextState.isScrollingUp ||
+            // this.state.lastScrolledKey !== nextState.lastScrolledKey ||
+            // (nextState.isScrollingUp && this.state.calcScrollHeight !== nextState.calcScrollHeight);
+            false;
+  },
+
+  render: function() {
+    var firstVisible = this.state.firstVisible;
+    var lastVisible = this.state.lastVisible;
     var lastScrolled = this.indexOfKey(this.state.lastScrolledKey);
     var child = firstVisible;
     var index = 0;
@@ -91,7 +96,7 @@ var List = React.createClass({
     );
   },
 
-  wrapChild: function wrapChild(index) {
+  wrapChild: function(index) {
     var child = this.props.children[index],
         key = child.key;
 
@@ -107,53 +112,21 @@ var List = React.createClass({
     );
   },
 
-  handleWheel: function handleWheel(key) {
-    var self = this;
-    return function() {
-      if (key !== self.state.lastScrolledKey) {
-        self.setState({lastScrolledKey: key});
-      }
-    }
-  },
-
-  handleScroll: function handleScroll(e) {
-    if (this.getDOMNode().scrollTop > this.other.scrollTop) {
-      this.other.isScrollingUp = false;
-    } else {
-      this.other.isScrollingUp = true;
-    }
-
-    this.calculateVisible();
-  },
-
-  calculateVisible: function calculateVisible() {
+  calculateVisible: function(newState) {
     var node = this.getDOMNode();
     var scrollTop = node.scrollTop;
     var scrollHeight = node.scrollHeight;
     var offsetHeight = node.offsetHeight;
 
-    // var isScrollingUp = true;
-    // if (scrollTop > this.other.scrollTop) {
-    //   isScrollingUp = false;
-    // }
-
-    // this.other.isScrollingUp = isScrollingUp;
     this.other.scrollHeight = scrollHeight;
     this.other.scrollTop = scrollTop;
 
-    var topIndex = this.model.indexOfViewportTop(scrollTop);
-    var bottomIndex = this.model.indexOfViewportBottom(scrollTop + offsetHeight, topIndex)
-
-    if (this.state.topIndex !== topIndex || this.state.bottomIndex !== bottomIndex) {
-      this.setState({
-        topIndex: topIndex,
-        bottomIndex: bottomIndex
-      });
-    }
+    newState.firstVisible = this.model.indexOfViewportTop(scrollTop);
+    newState.lastVisible = this.model.indexOfViewportBottom(scrollTop + offsetHeight, newState.firstVisible)
+    return newState;
   },
 
-  saveHeights: function saveHeights() {
-    // console.time('saveHeights');
+  saveHeights: function(newState) {
     var children = this.props.children;
     var refs = this.refs;
 
@@ -166,12 +139,12 @@ var List = React.createClass({
     }
 
     this.model.commit();
-    this.setState({calcScrollHeight: this.model.totalHeight()});
-    // console.timeEnd('saveHeights');
+    newState.calcScrollHeight = this.model.totalHeight();
+    return newState;
   },
 
-  fixScrollPosition: function fixScrollPosition() {
-    if (this.other.isScrollingUp) {
+  fixScrollPosition: function() {
+    if (this.state.isScrollingUp) {
       var node = this.getDOMNode();
       var newScrollTop = this.other.scrollTop + (node.scrollHeight - this.other.scrollHeight);
 
