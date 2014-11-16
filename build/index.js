@@ -28529,41 +28529,42 @@ var List = React.createClass({displayName: 'List',
   },
 
   componentWillMount: function() {
-    this.setState(this.initializeHeights({}));
+    this.setStateIfChanged(
+      this.initializeHeights({}));
   },
 
   componentDidMount: function() {
-    this.setState(this.calculateVisibility(this.saveHeights({})));
+    this.setStateIfChanged(
+      this.calculateVisibility(
+        this.saveHeights({})));
   },
 
   componentWillUpdate: function() {
-    var node = this.getDOMNode();
-    var scrollHeight = node.scrollHeight;
-    var scrollTop = node.scrollTop;
-
-    if (scrollHeight !== this.state.scrollHeight || scrollTop !== this.state.scrollTop) {
-      this.setState({scrollHeight: scrollHeight, scrollTop: scrollTop});
-    }
+    this.setStateIfChanged(
+      this.saveScroll({}));
   },
 
   componentDidUpdate: function() {
-    this.fixScrollPosition();
-    this.setState(this.calculateVisibility(this.saveHeights({})));
-  },
-
-  handleWheel: function(index, e) {
-    this.setState({lastScrolled: index, isScrollingUp: e.deltaY < 0});
+    this.setStateIfChanged(
+      this.calculateVisibility(
+        this.saveHeights(
+          this.fixScrollPosition({}))));
   },
 
   handleScroll: function() {
-    this.setState(this.calculateVisibility({}));
+    this.setStateIfChanged(
+      this.calculateVisibility({}));
+  },
+
+  handleWheel: function(index, e) {
+    this.setStateIfChanged({lastScrolled: index, isScrollingUp: e.deltaY < 0});
   },
 
   shouldComponentUpdate: function(nextProps, nextState) {
-    return  this.state.firstVisible !== nextState.firstVisible ||
-            this.state.lastVisible !== nextState.lastVisible ||
-            this.state.lastScrolled !== nextState.lastScrolled ||
-            this.state.heightOf !== nextState.heightOf;
+    return this.state.firstVisible !== nextState.firstVisible ||
+           this.state.lastVisible  !== nextState.lastVisible  ||
+           this.state.lastScrolled !== nextState.lastScrolled ||
+           this.state.heightOf     !== nextState.heightOf;
   },
 
   render: function() {
@@ -28615,8 +28616,33 @@ var List = React.createClass({displayName: 'List',
     );
   },
 
+  saveScroll: function(nextState) {
+    var node = this.getDOMNode();
+    var scrollHeight = node.scrollHeight;
+    var scrollTop = node.scrollTop;
+
+    if (scrollHeight !== this.state.scrollHeight) {
+      nextState.scrollHeight = scrollHeight;
+    }
+    if (scrollTop !== this.state.scrollTop) {
+      nextState.scrollTop = scrollTop;
+    }
+    return nextState;
+  },
+
+  fixScrollPosition: function(nextState) {
+    if (this.state.isScrollingUp) {
+      var node = this.getDOMNode();
+      var newScrollTop = this.state.scrollTop + (node.scrollHeight - this.state.scrollHeight);
+
+      if (node.scrollTop !== newScrollTop) {
+        node.scrollTop = newScrollTop;
+      }
+    }
+    return nextState;
+  },
+
   calculateVisibility: function(nextState) {
-    // console.time('calculateVisibility')
     var node = this.getDOMNode();
     var viewportStart = node.scrollTop;
     var viewportEnd = viewportStart + node.offsetHeight;
@@ -28625,7 +28651,6 @@ var List = React.createClass({displayName: 'List',
     nextState.scrollTop = viewportStart;
     nextState.firstVisible = Utils.binarySearch(this.state.topOf, viewportStart);
     nextState.lastVisible = Utils.binarySearch(this.state.topOf, viewportEnd + 1);
-    // console.timeEnd('calculateVisibility')
     return nextState;
   },
 
@@ -28654,11 +28679,8 @@ var List = React.createClass({displayName: 'List',
     var firstChanged = this.indexOfChangedHeight();
 
     if (firstChanged === -1) {
-      // console.timeEnd('saveHeights')
       return nextState;
     }
-
-    // console.time('saveHeights')
 
     var refs = this.refs;
     var children = this.props.children;
@@ -28697,8 +28719,6 @@ var List = React.createClass({displayName: 'List',
     nextState.heightOf = heightOf;
     nextState.topOf    = topOf;
     nextState.bottomOf = bottomOf;
-
-    // console.timeEnd('saveHeights')
     return nextState;
   },
 
@@ -28720,19 +28740,15 @@ var List = React.createClass({displayName: 'List',
     return -1;
   },
 
-  fixScrollPosition: function() {
-    if (this.state.isScrollingUp) {
-      var node = this.getDOMNode();
-      var newScrollTop = this.state.scrollTop + (node.scrollHeight - this.state.scrollHeight);
-
-      if (node.scrollTop !== newScrollTop) {
-        node.scrollTop = newScrollTop;
-      }
-    }
-  },
-
   totalHeight: function() {
     return this.state.bottomOf[this.props.children.length - 1];
+  },
+
+  setStateIfChanged: function(nextState) {
+    for (var prop in nextState) {
+      this.setState(nextState);
+      return;
+    }
   }
 });
 
