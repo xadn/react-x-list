@@ -4,7 +4,6 @@ var React = require('react/addons');
 var reactCloneWithProps = React.addons.cloneWithProps;
 var Model = require('./model');
 var ItemWrapper = require('./item_wrapper');
-var Placeholder = require('./placeholder');
 
 var FiniteList = React.createClass({
   getDefaultProps: function getDefaultProps() {
@@ -38,11 +37,7 @@ var FiniteList = React.createClass({
 
   componentDidMount: function componentDidMount() {
     this.updateHeights();
-
-    requestAnimationFrame(this.calculateVisible);
-
-    // this.startCalculating();
-
+    this.calculateVisible();
     this.setState({height: this.getDOMNode().offsetHeight});
   },
 
@@ -55,6 +50,7 @@ var FiniteList = React.createClass({
   componentDidUpdate: function componentDidUpdate() {
     this.fixScrollPosition();
     this.updateHeights();
+    this.calculateVisible();
   },
 
   shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
@@ -72,43 +68,29 @@ var FiniteList = React.createClass({
 
     if (lastScrolled >= 0 && firstVisible > lastScrolled) {
       return (
-        <ul className='is-list' onScroll={this.handleScroll}>
-          {Array.prototype.concat(
-            <Placeholder key={-1} start={0} end={topOf[lastScrolled]} />,
-            this.wrapChild(lastScrolled),
-            <Placeholder key={-2} start={bottomOf[lastScrolled]} end={topOf[firstVisible]} />,
-            this.visibleChildren(),
-            <Placeholder key={-3} start={bottomOf[lastVisible]} end={veryBottom} />,
-            <Placeholder key={-4} start={veryBottom} end={veryBottom} />
-          )}
-        </ul>
+        <div className='is-list-container' onScroll={this.handleScroll}>
+          <ul className='is-list' style={{height: veryBottom}}>
+            {[this.wrapChild(lastScrolled)].concat(this.visibleChildren())}
+          </ul>
+        </div>
       );
     }
     else if (lastScrolled > lastVisible) {
       return (
-        <ul className='is-list' onScroll={this.handleScroll}>
-          {Array.prototype.concat(
-            <Placeholder key={-1} start={0} end={0} />,
-            <Placeholder key={-2} start={0} end={topOf[firstVisible]} />,
-            this.visibleChildren(),
-            <Placeholder key={-3} start={bottomOf[lastVisible]} end={topOf[lastScrolled]} />,
-            this.wrapChild(lastScrolled),
-            <Placeholder key={-4} start={bottomOf[lastScrolled]} end={veryBottom} />
-          )}
-        </ul>
+        <div className='is-list-container' onScroll={this.handleScroll}>
+          <ul className='is-list' style={{height: veryBottom}}>
+            {this.visibleChildren().concat(this.wrapChild(lastScrolled))}
+          </ul>
+        </div>
       );
     }
     else {
       return (
-        <ul className='is-list' onScroll={this.handleScroll}>
-          {Array.prototype.concat(
-            <Placeholder key={-1} start={0} end={0} />,
-            <Placeholder key={-2} start={0} end={topOf[firstVisible]} />,
-            this.visibleChildren(),
-            <Placeholder key={-3} start={bottomOf[lastVisible]} end={veryBottom} />,
-            <Placeholder key={-4} start={veryBottom} end={veryBottom} />
-          )}
-        </ul>
+        <div className='is-list-container' onScroll={this.handleScroll}>
+          <ul className='is-list' style={{height: veryBottom}}>
+            {this.visibleChildren()}
+          </ul>
+        </div>
       );
     }
   },

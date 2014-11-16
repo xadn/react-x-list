@@ -28504,7 +28504,6 @@ var React = require('react/addons');
 var reactCloneWithProps = React.addons.cloneWithProps;
 var Model = require('./model');
 var ItemWrapper = require('./item_wrapper');
-var Placeholder = require('./placeholder');
 
 var FiniteList = React.createClass({displayName: 'FiniteList',
   getDefaultProps: function getDefaultProps() {
@@ -28538,11 +28537,7 @@ var FiniteList = React.createClass({displayName: 'FiniteList',
 
   componentDidMount: function componentDidMount() {
     this.updateHeights();
-
-    requestAnimationFrame(this.calculateVisible);
-
-    // this.startCalculating();
-
+    this.calculateVisible();
     this.setState({height: this.getDOMNode().offsetHeight});
   },
 
@@ -28555,6 +28550,7 @@ var FiniteList = React.createClass({displayName: 'FiniteList',
   componentDidUpdate: function componentDidUpdate() {
     this.fixScrollPosition();
     this.updateHeights();
+    this.calculateVisible();
   },
 
   shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
@@ -28572,41 +28568,27 @@ var FiniteList = React.createClass({displayName: 'FiniteList',
 
     if (lastScrolled >= 0 && firstVisible > lastScrolled) {
       return (
-        React.createElement("ul", {className: "is-list", onScroll: this.handleScroll}, 
-          Array.prototype.concat(
-            React.createElement(Placeholder, {key: -1, start: 0, end: topOf[lastScrolled]}),
-            this.wrapChild(lastScrolled),
-            React.createElement(Placeholder, {key: -2, start: bottomOf[lastScrolled], end: topOf[firstVisible]}),
-            this.visibleChildren(),
-            React.createElement(Placeholder, {key: -3, start: bottomOf[lastVisible], end: veryBottom}),
-            React.createElement(Placeholder, {key: -4, start: veryBottom, end: veryBottom})
+        React.createElement("div", {className: "is-list-container", onScroll: this.handleScroll}, 
+          React.createElement("ul", {className: "is-list", style: {height: veryBottom}}, 
+            [this.wrapChild(lastScrolled)].concat(this.visibleChildren())
           )
         )
       );
     }
     else if (lastScrolled > lastVisible) {
       return (
-        React.createElement("ul", {className: "is-list", onScroll: this.handleScroll}, 
-          Array.prototype.concat(
-            React.createElement(Placeholder, {key: -1, start: 0, end: 0}),
-            React.createElement(Placeholder, {key: -2, start: 0, end: topOf[firstVisible]}),
-            this.visibleChildren(),
-            React.createElement(Placeholder, {key: -3, start: bottomOf[lastVisible], end: topOf[lastScrolled]}),
-            this.wrapChild(lastScrolled),
-            React.createElement(Placeholder, {key: -4, start: bottomOf[lastScrolled], end: veryBottom})
+        React.createElement("div", {className: "is-list-container", onScroll: this.handleScroll}, 
+          React.createElement("ul", {className: "is-list", style: {height: veryBottom}}, 
+            this.visibleChildren().concat(this.wrapChild(lastScrolled))
           )
         )
       );
     }
     else {
       return (
-        React.createElement("ul", {className: "is-list", onScroll: this.handleScroll}, 
-          Array.prototype.concat(
-            React.createElement(Placeholder, {key: -1, start: 0, end: 0}),
-            React.createElement(Placeholder, {key: -2, start: 0, end: topOf[firstVisible]}),
-            this.visibleChildren(),
-            React.createElement(Placeholder, {key: -3, start: bottomOf[lastVisible], end: veryBottom}),
-            React.createElement(Placeholder, {key: -4, start: veryBottom, end: veryBottom})
+        React.createElement("div", {className: "is-list-container", onScroll: this.handleScroll}, 
+          React.createElement("ul", {className: "is-list", style: {height: veryBottom}}, 
+            this.visibleChildren()
           )
         )
       );
@@ -28736,7 +28718,7 @@ var FiniteList = React.createClass({displayName: 'FiniteList',
 });
 
 module.exports = FiniteList;
-},{"./item_wrapper":166,"./model":168,"./placeholder":169,"lodash":4,"react/addons":5}],168:[function(require,module,exports){
+},{"./item_wrapper":166,"./model":168,"lodash":4,"react/addons":5}],168:[function(require,module,exports){
 var _ = require('lodash');
 
 function List(defaultHeight, length) {
@@ -28811,24 +28793,4 @@ List.prototype.indexOfViewportBottom = function indexOfViewportBottom(viewportEn
 }
 
 module.exports = List
-},{"lodash":4}],169:[function(require,module,exports){
-/** @jsx React.DOM */
-var React = require('react/addons');
-
-var Placeholder = React.createClass({displayName: 'Placeholder',
-  render: function() {
-    var transform = 'translate3d(0px, ' + this.props.start + 'px, 0px)';
-
-    var style = {
-      WebkitTransform: transform,
-      transform: transform,
-      height: this.props.end - this.props.start
-    };
-
-    return React.createElement("li", {className: "is-item", style: style});
-  }
-});
-
-module.exports = Placeholder;
-
-},{"react/addons":5}]},{},[1]);
+},{"lodash":4}]},{},[1]);
