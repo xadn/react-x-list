@@ -1,4 +1,3 @@
-
 var Utils = {
   copyRange: function(destination, source, startRange, endRange) {
     for (var i = startRange; i < endRange; i++) {

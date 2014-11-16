@@ -1,9 +1,7 @@
 /** @jsx React.DOM */
-var _ = require('lodash');
-var React = require('react/addons');
-var reactCloneWithProps = React.addons.cloneWithProps;
+var React       = require('react/addons');
 var ItemWrapper = require('./item_wrapper');
-var Utils = require('./utils');
+var Utils       = require('./utils');
 
 var List = React.createClass({
   getDefaultProps: function() {

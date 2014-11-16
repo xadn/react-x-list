@@ -1,8 +1,8 @@
 /** @jsx React.DOM */
-var React = require('react/addons'),
-    FiniteList = require('./list'),
-    Chance = require('chance'),
-    chance = new Chance();
+var React      = require('react/addons');
+var FiniteList = require('./list');
+var Chance     = require('chance');
+var chance     = new Chance();
 
 function generateItems(count) {
   var items = [];
