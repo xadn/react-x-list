@@ -28503,6 +28503,7 @@ var _ = require('lodash');
 var React = require('react/addons');
 var reactCloneWithProps = React.addons.cloneWithProps;
 var ItemWrapper = require('./item_wrapper');
+var Utils = require('./utils');
 
 var List = React.createClass({displayName: 'List',
   getDefaultProps: function() {
@@ -28561,8 +28562,7 @@ var List = React.createClass({displayName: 'List',
     return  this.state.firstVisible !== nextState.firstVisible ||
             this.state.lastVisible !== nextState.lastVisible ||
             this.state.lastScrolled !== nextState.lastScrolled ||
-            !this.areArraysEqual(this.state.heightOf, nextState.heightOf) ||
-            false;
+            this.state.heightOf !== nextState.heightOf;
   },
 
   render: function() {
@@ -28629,27 +28629,25 @@ var List = React.createClass({displayName: 'List',
   initializeHeights: function(nextState) {
     var len = this.props.children.length;
     var defaultHeight = this.props.defaultHeight;
-    var topOf = new Uint32Array(len);
-    var bottomOf = new Uint32Array(len);
+    var prevBottom = 0;
     var heightOf = new Uint32Array(len);
-    var prev = 0;
+    var topOf    = new Uint32Array(len);
+    var bottomOf = new Uint32Array(len);
 
     for (var i = 0; i < len; i++) {
       heightOf[i] = defaultHeight;
-      topOf[i] = prev;
+      topOf[i]    = prevBottom;
       bottomOf[i] = topOf[i] + heightOf[i];
-      prev = bottomOf[i];
+      prevBottom  = bottomOf[i];
     }
 
-    nextState.topOf = topOf;
-    nextState.bottomOf = bottomOf;
     nextState.heightOf = heightOf;
+    nextState.topOf    = topOf;
+    nextState.bottomOf = bottomOf;
     return nextState;
   },
 
   saveHeights: function(nextState) {
-    // console.time('saveHeights')
-
     var firstChanged = this.indexOfChangedHeight();
 
     if (firstChanged === -1) {
@@ -28657,26 +28655,49 @@ var List = React.createClass({displayName: 'List',
       return nextState;
     }
 
+    // console.time('saveHeights')
+
+    var refs = this.refs;
     var children = this.props.children;
     var len = children.length;
-    var refs = this.refs;
     var defaultHeight = this.props.defaultHeight;
-    var topOf = new Uint32Array(len);
-    var bottomOf = new Uint32Array(len);
+    var lastVisible = this.state.lastVisible;
+    var prevHeightOf = this.state.heightOf;
+    var prevBottom = 0;
     var heightOf = new Uint32Array(len);
-    var prev = 0;
+    var topOf    = new Uint32Array(len);
+    var bottomOf = new Uint32Array(len);
 
-    for (var i = 0; i < len; i++) {
-      var key = children[i].key;
-      heightOf[i] = refs[key] ? refs[key].getDOMNode().offsetHeight : (this.state.heightOf[i] || defaultHeight);
-      topOf[i] = prev;
-      bottomOf[i] = topOf[i] + heightOf[i];
-      prev = bottomOf[i];
+    Utils.copyRange(heightOf, this.state.heightOf, 0, firstChanged);
+    Utils.copyRange(topOf,    this.state.topOf,    0, firstChanged);
+    Utils.copyRange(bottomOf, this.state.bottomOf, 0, firstChanged);
+
+    if (firstChanged > 1) {
+      prevBottom = bottomOf[firstChanged - 1];
     }
 
-    nextState.topOf = topOf;
-    nextState.bottomOf = bottomOf;
+    for (var visibleChild = firstChanged; visibleChild < lastVisible + 1; visibleChild++) {
+      var key = children[visibleChild].key;
+
+      heightOf[visibleChild] = refs[key].getDOMNode().offsetHeight;
+      topOf[visibleChild]    = prevBottom;
+      bottomOf[visibleChild] = topOf[visibleChild] + heightOf[visibleChild];
+      prevBottom             = bottomOf[visibleChild];
+    }
+
+    for (var child = lastVisible + 1; child < len; child++) {
+      var key = children[child].key;
+
+      heightOf[child] = this.state.heightOf[child] || defaultHeight;
+      topOf[child]    = prevBottom;
+      bottomOf[child] = topOf[child] + heightOf[child];
+      prevBottom      = bottomOf[child];
+    }
+
     nextState.heightOf = heightOf;
+    nextState.topOf    = topOf;
+    nextState.bottomOf = bottomOf;
+
     // console.timeEnd('saveHeights')
     return nextState;
   },
@@ -28747,22 +28768,20 @@ var List = React.createClass({displayName: 'List',
     }
 
     return right;
-  },
-
-  areArraysEqual: function(ary1, ary2) {
-    var len = ary1.length;
-
-    if (len !== ary2.length) {
-      return false;
-    }
-    for (var i = 0; i < len; i++) {
-      if (ary1[i] !== ary2[i]) {
-        return false;
-      }
-    }
-    return true;
   }
 });
 
 module.exports = List;
-},{"./item_wrapper":166,"lodash":4,"react/addons":5}]},{},[1]);
+},{"./item_wrapper":166,"./utils":168,"lodash":4,"react/addons":5}],168:[function(require,module,exports){
+
+var Utils = {
+  copyRange: function(destination, source, start, end) {
+    for (var i = start; i < end; i++) {destination
+      destination[i] = source[i];
+    }
+  }
+}
+
+module.exports = Utils;
+
+},{}]},{},[1]);
