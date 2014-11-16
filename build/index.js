@@ -28533,7 +28533,7 @@ var List = React.createClass({displayName: 'List',
   },
 
   componentDidMount: function() {
-    this.setState(this.calculateVisible(this.saveHeights({})));
+    this.setState(this.calculateVisibility(this.saveHeights({})));
   },
 
   componentWillUpdate: function() {
@@ -28548,7 +28548,7 @@ var List = React.createClass({displayName: 'List',
 
   componentDidUpdate: function() {
     this.fixScrollPosition();
-    this.setState(this.calculateVisible(this.saveHeights({})));
+    this.setState(this.calculateVisibility(this.saveHeights({})));
   },
 
   handleWheel: function(index, e) {
@@ -28556,7 +28556,7 @@ var List = React.createClass({displayName: 'List',
   },
 
   handleScroll: function() {
-    this.setState(this.calculateVisible({}));
+    this.setState(this.calculateVisibility({}));
   },
 
   shouldComponentUpdate: function(nextProps, nextState) {
@@ -28615,15 +28615,17 @@ var List = React.createClass({displayName: 'List',
     );
   },
 
-  calculateVisible: function(nextState) {
+  calculateVisibility: function(nextState) {
+    // console.time('calculateVisibility')
     var node = this.getDOMNode();
     var viewportStart = node.scrollTop;
     var viewportEnd = viewportStart + node.offsetHeight;
 
     nextState.scrollHeight = node.scrollHeight;
     nextState.scrollTop = viewportStart;
-    nextState.firstVisible = this.getFirstVisible(viewportStart);
-    nextState.lastVisible = this.getLastVisible(viewportEnd, nextState.firstVisible)
+    nextState.firstVisible = Utils.binarySearch(this.state.topOf, viewportStart);
+    nextState.lastVisible = Utils.binarySearch(this.state.topOf, viewportEnd + 1);
+    // console.timeEnd('calculateVisibility')
     return nextState;
   },
 
@@ -28679,7 +28681,6 @@ var List = React.createClass({displayName: 'List',
 
     for (var visibleChild = firstChanged; visibleChild < lastVisible + 1; visibleChild++) {
       var key = children[visibleChild].key;
-
       heightOf[visibleChild] = refs[key].getDOMNode().offsetHeight;
       topOf[visibleChild]    = prevBottom;
       bottomOf[visibleChild] = topOf[visibleChild] + heightOf[visibleChild];
@@ -28687,8 +28688,6 @@ var List = React.createClass({displayName: 'List',
     }
 
     for (var child = lastVisible + 1; child < len; child++) {
-      var key = children[child].key;
-
       heightOf[child] = this.state.heightOf[child] || defaultHeight;
       topOf[child]    = prevBottom;
       bottomOf[child] = topOf[child] + heightOf[child];
@@ -28734,41 +28733,6 @@ var List = React.createClass({displayName: 'List',
 
   totalHeight: function() {
     return this.state.bottomOf[this.props.children.length - 1];
-  },
-
-  getFirstVisible: function(viewportTop) {
-    var left = 0;
-    var right = this.props.children.length - 1;
-    var middle = 0;
-
-    while (right - left > 1) {
-      middle = Math.floor((right - left) / 2 + left);
-
-      if (this.state.topOf[middle] <= viewportTop) {
-        left = middle;
-      } else {
-        right = middle;
-      }
-    }
-
-    return left;
-  },
-
-  getLastVisible: function(viewportEnd, left) {
-    var right = this.props.children.length - 1;
-    var middle = 0;
-
-    while (right - left > 1) {
-      middle = Math.floor((right - left) / 2 + left);
-
-      if (this.state.bottomOf[middle] < viewportEnd) {
-        left = middle;
-      } else {
-        right = middle;
-      }
-    }
-
-    return right;
   }
 });
 
@@ -28776,10 +28740,35 @@ module.exports = List;
 },{"./item_wrapper":166,"./utils":168,"lodash":4,"react/addons":5}],168:[function(require,module,exports){
 
 var Utils = {
-  copyRange: function(destination, source, start, end) {
-    for (var i = start; i < end; i++) {
+  copyRange: function(destination, source, startRange, endRange) {
+    for (var i = startRange; i < endRange; i++) {
       destination[i] = source[i];
     }
+  },
+
+  binarySearch: function(values, target) {
+    var left = 0;
+    var right = values.length - 1;
+    var middle = 0;
+
+    if (target <= values[left]) {
+      return left;
+    }
+
+    if (target >= values[right]) {
+      return right;
+    }
+
+    while (right - left > 1) {
+      middle = Math.floor((right - left) / 2 + left);
+
+      if (values[middle] <= target) {
+        left = middle;
+      } else {
+        right = middle;
+      }
+    }
+    return left;
   }
 }
 
