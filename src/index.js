@@ -1,6 +1,6 @@
 /** @jsx React.DOM */
 var React = require('react/addons'),
-    FiniteList = require('./finite_list'),
+    FiniteList = require('./list'),
     Chance = require('chance'),
     chance = new Chance();
 
@@ -28,22 +28,17 @@ var ListItem = React.createClass({
     var item = this.props.item;
 
     return (
-      <li onWheel={this.props.onWheel}>
+      <div>
         <div>{item.id}</div>
         <div>{item.name}</div>
-      </li>
+      </div>
     );
   }
 });
 
 console.log(chance.string());
 
-    // <FiniteList>
-    //   {generateItems(200).map(function(item) {
-    //     return <ListItem key={item.id} item={item} />;
-    //   })}
-    // </FiniteList>
-React.renderComponent(
+React.render(
   <div>
     <FiniteList>
       {generateItems(5000).map(function(item) {

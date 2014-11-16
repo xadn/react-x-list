@@ -33,7 +33,7 @@ List.prototype.totalHeight = function totalHeight() {
 };
 
 List.prototype.indexOfViewportTop = function indexOfViewportTop(viewportTop) {
-  console.time('indexOfViewportTop');
+  // console.time('indexOfViewportTop');
   var left = 0;
   var right = this.length - 1;
   var middle = 0;
@@ -48,12 +48,12 @@ List.prototype.indexOfViewportTop = function indexOfViewportTop(viewportTop) {
     }
   }
 
-  console.timeEnd('indexOfViewportTop');
+  // console.timeEnd('indexOfViewportTop');
   return left;
 };
 
 List.prototype.indexOfViewportBottom = function indexOfViewportBottom(viewportEnd, left) {
-  console.time('indexOfViewportBottom');
+  // console.time('indexOfViewportBottom');
   var right = this.length - 1;
   var middle = 0;
 
@@ -67,7 +67,7 @@ List.prototype.indexOfViewportBottom = function indexOfViewportBottom(viewportEn
     }
   }
 
-  console.timeEnd('indexOfViewportBottom');
+  // console.timeEnd('indexOfViewportBottom');
   return right;
 }
 
