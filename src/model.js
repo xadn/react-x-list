@@ -68,7 +68,7 @@ List.prototype.indexOfViewportBottom = function indexOfViewportBottom(viewportEn
   }
 
   // console.timeEnd('indexOfViewportBottom');
-  return right;
+  return Math.min(right + 1, this.length - 1);
 }
 
 module.exports = List

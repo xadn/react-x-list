@@ -2,10 +2,6 @@ html {
   font: 12px Helvetica, sans-serif;
 }
 
-#main {
-  min-width: 980px;
-}
-
 .is-list-container {
   height: 650px;
   overflow-y: scroll;

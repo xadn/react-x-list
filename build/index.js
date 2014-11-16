@@ -28554,7 +28554,9 @@ var List = React.createClass({displayName: 'List',
   },
 
   shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
-    return this.state.topIndex !== nextState.topIndex || this.state.bottomIndex !== nextState.bottomIndex;
+    return  this.state.topIndex !== nextState.topIndex ||
+            this.state.bottomIndex !== nextState.bottomIndex ||
+            (this.other.isScrollingUp && this.state.calcScrollHeight !== nextState.calcScrollHeight);
   },
 
   render: function render() {
@@ -28615,6 +28617,12 @@ var List = React.createClass({displayName: 'List',
   },
 
   handleScroll: function handleScroll(e) {
+    if (this.getDOMNode().scrollTop > this.other.scrollTop) {
+      this.other.isScrollingUp = false;
+    } else {
+      this.other.isScrollingUp = true;
+    }
+
     this.calculateVisible();
   },
 
@@ -28624,12 +28632,12 @@ var List = React.createClass({displayName: 'List',
     var scrollHeight = node.scrollHeight;
     var offsetHeight = node.offsetHeight;
 
-    var isScrollingUp = true;
-    if (scrollTop > this.other.scrollTop) {
-      isScrollingUp = false;
-    }
+    // var isScrollingUp = true;
+    // if (scrollTop > this.other.scrollTop) {
+    //   isScrollingUp = false;
+    // }
 
-    this.other.isScrollingUp = isScrollingUp;
+    // this.other.isScrollingUp = isScrollingUp;
     this.other.scrollHeight = scrollHeight;
     this.other.scrollTop = scrollTop;
 
@@ -28756,7 +28764,7 @@ List.prototype.indexOfViewportBottom = function indexOfViewportBottom(viewportEn
   }
 
   // console.timeEnd('indexOfViewportBottom');
-  return right;
+  return Math.min(right + 1, this.length - 1);
 }
 
 module.exports = List
