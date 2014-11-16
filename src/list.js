@@ -148,6 +148,15 @@ var List = React.createClass({
   },
 
   saveHeights: function(nextState) {
+    // console.time('saveHeights')
+
+    var firstChanged = this.indexOfChangedHeight();
+
+    if (firstChanged === -1) {
+      // console.timeEnd('saveHeights')
+      return nextState;
+    }
+
     var children = this.props.children;
     var len = children.length;
     var refs = this.refs;
@@ -168,7 +177,26 @@ var List = React.createClass({
     nextState.topOf = topOf;
     nextState.bottomOf = bottomOf;
     nextState.heightOf = heightOf;
+    // console.timeEnd('saveHeights')
     return nextState;
+  },
+
+  indexOfChangedHeight: function() {
+    var children = this.props.children;
+    var heightOf = this.state.heightOf;
+    var refs = this.refs;
+    var firstVisible = this.state.firstVisible;
+    var lastVisible = this.state.lastVisible;
+
+    for (var child = firstVisible; child <= lastVisible; child++) {
+      var key = children[child].key;
+      var height = refs[key].getDOMNode().offsetHeight;
+
+      if (height !== heightOf[child]) {
+        return child;
+      }
+    }
+    return -1;
   },
 
   fixScrollPosition: function() {
