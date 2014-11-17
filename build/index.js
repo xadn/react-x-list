@@ -42,7 +42,7 @@ console.log(chance.string());
 React.render(
   React.createElement("div", null, 
     React.createElement(FiniteList, null, 
-      generateItems(1).map(function(item) {
+      generateItems(5000).map(function(item) {
         return React.createElement(ListItem, {key: item.id, item: item});
       })
     )
@@ -50,7 +50,7 @@ React.render(
   document.getElementById('main'));
 
 
-},{"./list":166,"chance":3,"react/addons":4}],2:[function(require,module,exports){
+},{"./list":168,"chance":3,"react/addons":4}],2:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -21686,35 +21686,21 @@ module.exports = warning;
 }).call(this,require('_process'))
 },{"./emptyFunction":125,"_process":2}],165:[function(require,module,exports){
 /** @jsx React.DOM */
-var React = require('react/addons');
+var React         = require('react/addons');
+var ListContainer = require('./list_container');
 
-var ItemWrapper = React.createClass({displayName: 'ItemWrapper',
+var EmptyList = React.createClass({displayName: 'EmptyList',
   render: function() {
-    var transform = 'translate3d(0px, ' + this.props.offsetTop + 'px, 0px)';
-
-    var style = {
-      WebkitTransform: transform,
-      transform: transform,
-      opacity: this.props.visible ? 1 : 0
-    };
-
-    return (
-      React.createElement("li", {className: "is-item", style: style, onWheel: this.handleWheel}, 
-        this.props.children
-      )
-    );
-  },
-
-  handleWheel: function(e) {
-    this.props.onWheel(this.props.index, e);
+    return React.createElement(ListContainer, {style: {height: 0}});
   }
 });
 
-module.exports = ItemWrapper;
+module.exports = EmptyList;
 
-},{"react/addons":4}],166:[function(require,module,exports){
+},{"./list_container":169,"react/addons":4}],166:[function(require,module,exports){
 /** @jsx React.DOM */
 var React       = require('react/addons');
+var ListContainer = require('./list_container');
 var ItemWrapper = require('./item_wrapper');
 var Utils       = require('./utils');
 
@@ -21739,7 +21725,8 @@ var List = React.createClass({displayName: 'List',
 
   componentWillMount: function() {
     this.setStateIfChanged(
-      this.initializeHeights({}));
+      this.initializeHeights(
+        this.initializeVisibility({})));
   },
 
   componentDidMount: function() {
@@ -21800,10 +21787,8 @@ var List = React.createClass({displayName: 'List',
     }
 
     return (
-      React.createElement("div", {className: "is-list-container", onScroll: this.handleScroll}, 
-        React.createElement("ul", {className: "is-list", style: {height: this.totalHeight()}}, 
-          visibleChildren
-        )
+      React.createElement(ListContainer, {onScroll: this.handleScroll, style: {height: this.totalHeight()}}, 
+        visibleChildren
       )
     );
   },
@@ -21860,6 +21845,15 @@ var List = React.createClass({displayName: 'List',
     nextState.scrollTop = viewportStart;
     nextState.firstVisible = Utils.binarySearch(this.state.topOf, viewportStart);
     nextState.lastVisible = Utils.binarySearch(this.state.topOf, viewportEnd + 1);
+    return nextState;
+  },
+
+  initializeVisibility: function(nextState) {
+    if (this.props.children.length > 1) {
+      nextState.lastVisible = 1;
+    } else {
+      nextState.lastVisible = 0;
+    }
     return nextState;
   },
 
@@ -21963,7 +21957,70 @@ var List = React.createClass({displayName: 'List',
 });
 
 module.exports = List;
-},{"./item_wrapper":165,"./utils":167,"react/addons":4}],167:[function(require,module,exports){
+},{"./item_wrapper":167,"./list_container":169,"./utils":170,"react/addons":4}],167:[function(require,module,exports){
+/** @jsx React.DOM */
+var React = require('react/addons');
+
+var ItemWrapper = React.createClass({displayName: 'ItemWrapper',
+  render: function() {
+    var transform = 'translate3d(0px, ' + this.props.offsetTop + 'px, 0px)';
+
+    var style = {
+      WebkitTransform: transform,
+      transform: transform,
+      opacity: this.props.visible ? 1 : 0
+    };
+
+    return (
+      React.createElement("li", {className: "is-item", style: style, onWheel: this.handleWheel}, 
+        this.props.children
+      )
+    );
+  },
+
+  handleWheel: function(e) {
+    this.props.onWheel(this.props.index, e);
+  }
+});
+
+module.exports = ItemWrapper;
+
+},{"react/addons":4}],168:[function(require,module,exports){
+/** @jsx React.DOM */
+var React = require('react/addons');
+var EmptyList = require('./empty_list');
+var FiniteList = require('./finite_list');
+
+var List = React.createClass({displayName: 'List',
+  render: function() {
+    if (this.props.children.length > 0) {
+      return React.createElement(FiniteList, React.__spread({},  this.props))
+    }
+    return React.createElement(EmptyList, React.__spread({},  this.props))
+  }
+});
+
+module.exports = List;
+
+},{"./empty_list":165,"./finite_list":166,"react/addons":4}],169:[function(require,module,exports){
+/** @jsx React.DOM */
+var React = require('react/addons');
+
+var ListContainer = React.createClass({displayName: 'ListContainer',
+  render: function() {
+    return (
+      React.createElement("div", {className: "is-list-container", onScroll: this.props.onScroll}, 
+        React.createElement("ul", {className: "is-list", style: this.props.style}, 
+          this.props.children
+        )
+      )
+    );
+  }
+});
+
+module.exports = ListContainer;
+
+},{"react/addons":4}],170:[function(require,module,exports){
 var Utils = {
   copyRange: function(destination, source, startRange, endRange) {
     for (var i = startRange; i < endRange; i++) {
