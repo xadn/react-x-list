@@ -13,7 +13,7 @@ var List = React.createClass({
       isScrollingUp: true,
       lastScrolled: -1,
       firstVisible: 0,
-      lastVisible: 1,
+      lastVisible: 0,
       scrollHeight: 0,
       scrollTop: 0,
       topOf:    new Uint32Array(0),

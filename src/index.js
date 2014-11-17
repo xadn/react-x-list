@@ -41,7 +41,7 @@ console.log(chance.string());
 React.render(
   <div>
     <FiniteList>
-      {generateItems(5000).map(function(item) {
+      {generateItems(1).map(function(item) {
         return <ListItem key={item.id} item={item} />;
       })}
     </FiniteList>

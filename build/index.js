@@ -42,7 +42,7 @@ console.log(chance.string());
 React.render(
   React.createElement("div", null, 
     React.createElement(FiniteList, null, 
-      generateItems(5000).map(function(item) {
+      generateItems(1).map(function(item) {
         return React.createElement(ListItem, {key: item.id, item: item});
       })
     )
@@ -21728,7 +21728,7 @@ var List = React.createClass({displayName: 'List',
       isScrollingUp: true,
       lastScrolled: -1,
       firstVisible: 0,
-      lastVisible: 1,
+      lastVisible: 0,
       scrollHeight: 0,
       scrollTop: 0,
       topOf:    new Uint32Array(0),
