@@ -19,7 +19,7 @@ function generateItems(count) {
   return items;
 }
 
-var ListItem = React.createClass({
+var DemoItem = React.createClass({
   shouldComponentUpdate: function() {
     return false;
   },
@@ -36,15 +36,39 @@ var ListItem = React.createClass({
   }
 });
 
+var DemoList = React.createClass({
+  getInitialState: function() {
+    return {count: 10, render: 0};
+  },
+
+  componentDidMount: function() {
+    // setInterval(this.update, 2000);
+  },
+
+  update: function() {
+    this.setState({
+      count: chance.natural({min: 20, max: 80}),
+      renders: this.state.renders + 1
+    });
+  },
+
+  render: function() {
+    var state = this.state;
+    console.log('DemoList', state);
+
+    return (
+      <div>
+        <FiniteList>
+          {generateItems(state.count).map(function(item) {
+            return <DemoItem key={state.renders + '-' + item.id} item={item} />;
+          })}
+        </FiniteList>
+      </div>
+    );
+  }
+});
+
 console.log(chance.string());
 
-React.render(
-  <div>
-    <FiniteList>
-      {generateItems(5000).map(function(item) {
-        return <ListItem key={item.id} item={item} />;
-      })}
-    </FiniteList>
-  </div>,
-  document.getElementById('main'));
+React.render(<DemoList />, document.getElementById('main'));
 
