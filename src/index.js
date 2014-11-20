@@ -10,27 +10,43 @@ function generateItems(count) {
     items.push({
       id: i + 1,
       name: chance.sentence({words: chance.natural({min: 1, max: 40})}),
-      height: 20,
-      scrolledAt: -1,
-      isScrolling: false,
-      isVisible: false
+      height: 21
     });
   }
   return items;
 }
 
 var DemoItem = React.createClass({
-  shouldComponentUpdate: function() {
-    return false;
+  getInitialState: function() {
+    return {interval: null};
+  },
+
+  componentDidMount: function() {
+    this.isMounted() && chance.bool() && this.setState({
+      interval: setInterval(this.update, chance.natural({min: 500, max: 15000}))
+    });
+  },
+
+  componentWillUnmount: function() {
+    clearInterval(this.state.interval);
+  },
+
+  update: function() {
+    var height = Math.min(this.props.item.height + 20, 300);
+
+    if (height !== this.props.item.height && this.isMounted()) {
+      this.props.item.height = height;
+      this.forceUpdate();
+    }
   },
 
   render: function() {
     var item = this.props.item;
 
+        // <img src='1.gif' />
     return (
-      <div>
+      <div style={{height: item.height}}>
         <div>{item.id}</div>
-        <div>{item.name}</div>
       </div>
     );
   }
@@ -42,7 +58,7 @@ var DemoList = React.createClass({
   },
 
   componentDidMount: function() {
-    setInterval(this.update, 2000);
+    // setInterval(this.update, 2000);
   },
 
   update: function() {

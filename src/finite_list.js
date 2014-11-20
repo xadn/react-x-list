@@ -85,6 +85,16 @@ var List = React.createClass({
     this.setStateIfChanged({stateChanges: {lastScrolled: index, isScrollingUp: e.deltaY < 0}});
   },
 
+  handleMutate: function(index) {
+    this.setStateIfChanged(
+      this.calculateVisibility(
+        this.getMetrics(
+          this.fixScrollPosition({
+          props: this.props,
+          state: this.state,
+          stateChanges: {}}))));
+  },
+
   shouldComponentUpdate: function(nextProps, nextState) {
     var shouldUpdate = this.state.firstVisible !== nextState.firstVisible ||
            this.state.lastVisible  !== nextState.lastVisible  ||
@@ -144,6 +154,7 @@ var List = React.createClass({
         ref={key}
         index={index}
         onWheel={this.handleWheel}
+        onMutate={this.handleMutate}
         offsetTop={this.state.topOf[index]}
         visible={this.state.heightOf[index] !== this.props.defaultHeight}>
         {child}

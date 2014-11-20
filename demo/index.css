@@ -19,6 +19,8 @@ html {
 
 .is-item {
   position: absolute;
+  border-bottom: solid 1px;
+  width: 100%;
 }
 
 .is-highlight {
