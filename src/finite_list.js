@@ -64,7 +64,6 @@ var List = React.createClass({
   },
 
   componentWillReceiveProps: function(nextProps) {
-    // console.log('componentWillReceiveProps');
     this.setStateIfChanged(
       this.calculateVisibility(
         this.reinitializeMetrics({
@@ -90,10 +89,8 @@ var List = React.createClass({
     var shouldUpdate = this.state.firstVisible !== nextState.firstVisible ||
            this.state.lastVisible  !== nextState.lastVisible  ||
            this.state.lastScrolled !== nextState.lastScrolled ||
-           !_.isEqual(this.state.heightOf, nextState.heightOf) ||
-           !_.isEqual(this.state.keyToIndex, nextState.keyToIndex) ||
-           false;
-           // this.state.heightOf     !== nextState.heightOf;
+           !Utils.areArraysEqual(this.state.heightOf, nextState.heightOf) ||
+           !_.isEqual(this.state.keyToIndex, nextState.keyToIndex);
 
     if (shouldUpdate) {
       safety++;
@@ -104,16 +101,6 @@ var List = React.createClass({
       safety = 0;
     }
 
-
-    // console.log('shouldComponentUpdate', 'shouldUpdate', shouldUpdate, {
-    //   1: this.state.firstVisible !== nextState.firstVisible,
-    //   2: this.state.lastVisible  !== nextState.lastVisible ,
-    //   3: this.state.lastScrolled !== nextState.lastScrolled,
-    //   4: !_.isEqual(this.state.heightOf, nextState.heightOf),
-    //   5: !_.isEqual(this.state.keyToIndex, nextState.keyToIndex),
-    //   'this.state.heightOf': JSON.stringify(this.state.heightOf),
-    //   'nextState.heightOf': JSON.stringify(nextState.heightOf)
-    // });
     return shouldUpdate;
   },
 
@@ -127,16 +114,10 @@ var List = React.createClass({
     var visibleChildren = [];
     visibleChildren.length = length|0;
 
-    // console.log('render', {
-    //   firstVisible: firstVisible,
-    //   lastVisible: lastVisible,
-    //   lastScrolled: lastScrolled
-    // })
-
-    if (lastScrolled >= 0 && firstVisible > lastScrolled) {
+    if (firstVisible > lastScrolled && lastScrolled > -1) {
       visibleChildren[0] = this.wrapChild(lastScrolled);
       index = 1;
-    } else if (lastScrolled > lastVisible) {
+    } else if (this.props.children.length > lastScrolled && lastScrolled > lastVisible) {
       visibleChildren[length - 1] = this.wrapChild(lastScrolled);
     }
 
@@ -206,19 +187,6 @@ var List = React.createClass({
     params.stateChanges.scrollTop = viewportStart;
     params.stateChanges.firstVisible = Utils.binarySearch(topOf, viewportStart);
     params.stateChanges.lastVisible = Utils.binarySearch(topOf, viewportEnd + 1);
-
-    // params.stateChanges.firstVisible = Math.max(params.stateChanges.firstVisible, 0);
-    // params.stateChanges.lastVisible = Math.min(params.stateChanges.lastVisible, params.props.children.length);
-
-    // Utils.binarySearch(topOf, 1573)
-    // debugger
-
-    // console.log('calculateVisibility', {
-    //   viewportStart: viewportStart,
-    //   'viewportEnd + 1': viewportEnd+1,
-    //   firstVisible: params.stateChanges.firstVisible,
-    //   lastVisible: params.stateChanges.lastVisible
-    // })
     return params;
   },
 
@@ -275,8 +243,6 @@ var List = React.createClass({
       keyToIndex[key] = child;
     }
 
-    // console.log('reinitializeMetrics', topOf.length)
-
     if (params.state.lastScrolled !== -1) {
       var lastScrolledKey = params.props.children[params.state.lastScrolled].key;
       params.stateChanges.lastScrolled = keyToIndex[lastScrolledKey] || -1;
@@ -295,17 +261,14 @@ var List = React.createClass({
     var refs = this.refs;
     var children = params.props.children;
     var len = children.length;
-
     var defaultHeight = params.props.defaultHeight;
     var prevHeightOf = params.state.heightOf;
     var prevKeyToIndex = params.state.keyToIndex;
-    // var keyToIndex = params.state.keyToIndex;
-
-    var runningTotal = 0;
     var heightOf = new Uint32Array(len);
     var topOf    = new Uint32Array(len);
     var bottomOf = new Uint32Array(len);
     var keyToIndex = {};
+    var runningTotal = 0;
 
     for (var child = 0; child < len; child++) {
       var key = children[child].key;
@@ -326,91 +289,11 @@ var List = React.createClass({
       keyToIndex[key] = child;
     }
 
-    // console.log('reinitializeMetrics', topOf.length)
-
-    // if (params.state.lastScrolled !== -1) {
-    //   var lastScrolledKey = params.props.children[params.state.lastScrolled].key;
-    //   params.stateChanges.lastScrolled = keyToIndex[lastScrolledKey] || -1;
-    // }
-
     params.stateChanges.heightOf = heightOf;
     params.stateChanges.topOf    = topOf;
     params.stateChanges.bottomOf = bottomOf;
     params.stateChanges.keyToIndex = keyToIndex;
-
-    // params.props = params.nextProps;
     return params;
-  },
-
-  // getMetrics: function(params) {
-  //   var firstChanged = this.indexOfChangedHeight(params);
-
-  //   if (firstChanged === -1) {
-  //     return params;
-  //   }
-
-  //   var refs = this.refs;
-  //   var children = params.props.children;
-  //   var len = children.length;
-  //   var defaultHeight = params.props.defaultHeight;
-  //   var lastVisible = params.state.lastVisible;
-  //   var prevHeightOf = params.state.heightOf;
-  //   var runningTotal = 0;
-  //   var heightOf = new Uint32Array(len);
-  //   var topOf    = new Uint32Array(len);
-  //   var bottomOf = new Uint32Array(len);
-
-  //   // Top of the list to somewhere in the viewport - copy the previous attributes
-  //   Utils.copyRange(heightOf, params.state.heightOf, 0, firstChanged);
-  //   Utils.copyRange(topOf,    params.state.topOf,    0, firstChanged);
-  //   Utils.copyRange(bottomOf, params.state.bottomOf, 0, firstChanged);
-
-  //   if (firstChanged > 1) {
-  //     runningTotal = bottomOf[firstChanged - 1];
-  //   }
-
-  //   // Within the viewport - grab the attributes from the DOM
-  //   for (var visibleChild = firstChanged; visibleChild < lastVisible + 1; visibleChild++) {
-  //     var key = children[visibleChild].key;
-  //     heightOf[visibleChild] = refs[key].getDOMNode().offsetHeight;
-  //     topOf[visibleChild]    = runningTotal;
-  //     bottomOf[visibleChild] = topOf[visibleChild] + heightOf[visibleChild];
-  //     runningTotal           = bottomOf[visibleChild];
-  //   }
-
-  //   // Below the viewport - copy attributes and calculate cascading changes
-  //   for (var child = lastVisible + 1; child < len; child++) {
-  //     heightOf[child] = prevHeightOf[child] || defaultHeight;
-  //     topOf[child]    = runningTotal;
-  //     bottomOf[child] = topOf[child] + heightOf[child];
-  //     runningTotal    = bottomOf[child];
-  //   }
-
-  //   // console.log('getMetrics', topOf.length)
-
-  //   params.stateChanges.heightOf = heightOf;
-  //   params.stateChanges.topOf    = topOf;
-  //   params.stateChanges.bottomOf = bottomOf;
-  //   return params;
-  // },
-
-  indexOfChangedHeight: function(params) {
-    var children = params.props.children;
-    var heightOf = params.state.heightOf;
-    var refs = this.refs;
-    var firstVisible = params.state.firstVisible;
-    var lastVisible = params.state.lastVisible;
-
-    for (var child = firstVisible; child <= lastVisible; child++) {
-      var key = children[child].key;
-      if (!refs[key]) { throw 'node not rendered' }
-      var height = refs[key].getDOMNode().offsetHeight;
-
-      if (height !== heightOf[child]) {
-        return child;
-      }
-    }
-    return -1;
   },
 
   totalHeight: function() {

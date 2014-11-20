@@ -6,8 +6,9 @@ var Utils = {
   },
 
   binarySearch: function(values, target) {
+    var max = values.length - 1;
     var left = 0;
-    var right = values.length - 1;
+    var right = max;
     var middle = 0;
 
     if (target <= values[left]) {
@@ -27,7 +28,19 @@ var Utils = {
         right = middle;
       }
     }
-    return left;
+    return Math.min(left, max);
+  },
+
+  areArraysEqual: function(a, b) {
+    var len = a.length;
+
+    if (len !== b.length) { return false; }
+
+    for (var i = 0; i < len; i++) {
+      if (a[i] !== b[i]) { return false; }
+    }
+
+    return true;
   }
 }
 

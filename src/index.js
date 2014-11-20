@@ -38,11 +38,11 @@ var DemoItem = React.createClass({
 
 var DemoList = React.createClass({
   getInitialState: function() {
-    return {count: 10, render: 0};
+    return {count: 200, renders: 0};
   },
 
   componentDidMount: function() {
-    // setInterval(this.update, 2000);
+    setInterval(this.update, 2000);
   },
 
   update: function() {
