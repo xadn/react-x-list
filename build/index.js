@@ -17,14 +17,14 @@ function generateItems(count) {
   return items;
 }
 
-var DemoItem = React.createClass({displayName: 'DemoItem',
+var DynamicListDemoItem = React.createClass({displayName: 'DynamicListDemoItem',
   getInitialState: function() {
     return {interval: null};
   },
 
   componentDidMount: function() {
     this.isMounted() && chance.bool() && this.setState({
-      interval: setInterval(this.update, chance.natural({min: 200, max: 1000}))
+      interval: setInterval(this.update, chance.natural({min: 250, max: 500}))
     });
   },
 
@@ -33,13 +33,16 @@ var DemoItem = React.createClass({displayName: 'DemoItem',
   },
 
   update: function() {
-    // var height = Math.min(this.props.item.height + 20, 300);
     var height = chance.natural({min: 30, max: 100});
 
     if (height !== this.props.item.height && this.isMounted()) {
       this.props.item.height = height;
       this.forceUpdate();
     }
+  },
+
+  shouldComponentUpdate: function() {
+    return false;
   },
 
   render: function() {
@@ -53,31 +56,30 @@ var DemoItem = React.createClass({displayName: 'DemoItem',
   }
 });
 
-var DemoList = React.createClass({displayName: 'DemoList',
+var DynamicListDemo = React.createClass({displayName: 'DynamicListDemo',
   getInitialState: function() {
-    return {count: 200, renders: 0};
+    return {count: 50, renders: 0};
   },
 
   componentDidMount: function() {
-    setInterval(this.update, 2000);
+    setInterval(this.update, 5000);
   },
 
   update: function() {
     this.setState({
-      count: chance.natural({min: 20, max: 3000}),
+      count: chance.natural({min: 0, max: 50}),
       renders: this.state.renders + 1
     });
   },
 
   render: function() {
     var state = this.state;
-    console.log('DemoList', state);
 
     return (
       React.createElement("div", null, 
         React.createElement(FiniteList, null, 
           generateItems(state.count).map(function(item) {
-            return React.createElement(DemoItem, {key: state.renders + '-' + item.id, item: item});
+            return React.createElement(DynamicListDemoItem, {key: state.renders + '-' + item.id, item: item});
           })
         )
       )
@@ -85,9 +87,53 @@ var DemoList = React.createClass({displayName: 'DemoList',
   }
 });
 
-console.log(chance.string());
+var StaticListDemoItem = React.createClass({displayName: 'StaticListDemoItem',
+  shouldComponentUpdate: function() {
+    return false;
+  },
 
-React.render(React.createElement(DemoList, null), document.getElementById('main'));
+  render: function() {
+    return (
+      React.createElement("div", null, 
+        React.createElement("div", null, this.props.item.id), 
+        React.createElement("div", null, this.props.item.name)
+      )
+    );
+  }
+});
+
+var StaticListDemo = React.createClass({displayName: 'StaticListDemo',
+  render: function() {
+    return (
+      React.createElement("div", null, 
+        React.createElement(FiniteList, null, 
+          generateItems(5000).map(function(item) {
+            return React.createElement(StaticListDemoItem, {key: item.id, item: item});
+          })
+        )
+      )
+    );
+  }
+});
+
+var Demos = React.createClass({displayName: 'Demos',
+  render: function() {
+    var state = this.state;
+    return (
+      React.createElement("div", null, 
+        React.createElement("div", {style: {float: 'left', marginRight: 20}}, 
+          React.createElement(StaticListDemo, null)
+        ), 
+
+        React.createElement("div", {style: {float: 'left', marginRight: 20}}, 
+          React.createElement(DynamicListDemo, null)
+        )
+      )
+    );
+  }
+});
+
+React.render(React.createElement(Demos, null), document.getElementById('main'));
 
 
 },{"./list":169,"chance":3,"react/addons":5}],2:[function(require,module,exports){
