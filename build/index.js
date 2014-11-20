@@ -11,7 +11,7 @@ function generateItems(count) {
     items.push({
       id: i + 1,
       name: chance.sentence({words: chance.natural({min: 1, max: 40})}),
-      height: 21
+      height: chance.natural({min: 10, max: 200})
     });
   }
   return items;
@@ -24,7 +24,7 @@ var DemoItem = React.createClass({displayName: 'DemoItem',
 
   componentDidMount: function() {
     this.isMounted() && chance.bool() && this.setState({
-      interval: setInterval(this.update, chance.natural({min: 500, max: 15000}))
+      interval: setInterval(this.update, chance.natural({min: 200, max: 1000}))
     });
   },
 
@@ -33,7 +33,8 @@ var DemoItem = React.createClass({displayName: 'DemoItem',
   },
 
   update: function() {
-    var height = Math.min(this.props.item.height + 20, 300);
+    // var height = Math.min(this.props.item.height + 20, 300);
+    var height = chance.natural({min: 30, max: 100});
 
     if (height !== this.props.item.height && this.isMounted()) {
       this.props.item.height = height;
@@ -44,7 +45,6 @@ var DemoItem = React.createClass({displayName: 'DemoItem',
   render: function() {
     var item = this.props.item;
 
-        // <img src='1.gif' />
     return (
       React.createElement("div", {style: {height: item.height}}, 
         React.createElement("div", null, item.id)
@@ -59,12 +59,12 @@ var DemoList = React.createClass({displayName: 'DemoList',
   },
 
   componentDidMount: function() {
-    // setInterval(this.update, 2000);
+    setInterval(this.update, 2000);
   },
 
   update: function() {
     this.setState({
-      count: chance.natural({min: 20, max: 80}),
+      count: chance.natural({min: 20, max: 3000}),
       renders: this.state.renders + 1
     });
   },
@@ -28572,6 +28572,16 @@ var List = React.createClass({displayName: 'List',
           props: this.props,
           state: this.state,
           stateChanges: {}})));
+
+    if (this.isMounted()) {
+      this.observer_ = new MutationObserver(this.handleMutations);
+      this.observer_.observe(this.getDOMNode(), {attributes: true, childList: true, characterData: true, subtree: true});
+    }
+  },
+
+  componentWillUnmount: function() {
+    this.observer_ && this.observer_.disconnect();
+    this.observer_ = null;
   },
 
   componentWillUpdate: function() {
@@ -28614,7 +28624,7 @@ var List = React.createClass({displayName: 'List',
     this.setStateIfChanged({stateChanges: {lastScrolled: index, isScrollingUp: e.deltaY < 0}});
   },
 
-  handleMutate: function(index) {
+  handleMutations: function() {
     this.setStateIfChanged(
       this.calculateVisibility(
         this.getMetrics(
@@ -28625,22 +28635,22 @@ var List = React.createClass({displayName: 'List',
   },
 
   shouldComponentUpdate: function(nextProps, nextState) {
-    var shouldUpdate = this.state.firstVisible !== nextState.firstVisible ||
+    return this.state.firstVisible !== nextState.firstVisible ||
            this.state.lastVisible  !== nextState.lastVisible  ||
            this.state.lastScrolled !== nextState.lastScrolled ||
            !Utils.areArraysEqual(this.state.heightOf, nextState.heightOf) ||
            !_.isEqual(this.state.keyToIndex, nextState.keyToIndex);
 
-    if (shouldUpdate) {
-      safety++;
-      if (safety > 50) {
-        throw new Error('too many renders in a row')
-      }
-    } else {
-      safety = 0;
-    }
+    // if (shouldUpdate) {
+    //   safety++;
+    //   if (safety > 50) {
+    //     throw new Error('too many renders in a row')
+    //   }
+    // } else {
+    //   safety = 0;
+    // }
 
-    return shouldUpdate;
+    // return shouldUpdate;
   },
 
   render: function() {
@@ -28683,7 +28693,6 @@ var List = React.createClass({displayName: 'List',
         ref: key, 
         index: index, 
         onWheel: this.handleWheel, 
-        onMutate: this.handleMutate, 
         offsetTop: this.state.topOf[index], 
         visible: this.state.heightOf[index] !== this.props.defaultHeight}, 
         child
@@ -28854,18 +28863,6 @@ module.exports = List;
 var React = require('react/addons');
 
 var ItemWrapper = React.createClass({displayName: 'ItemWrapper',
-  componentDidMount: function() {
-    if (this.isMounted()) {
-      this.observer_ = new MutationObserver(this.handleMutations);
-      this.observer_.observe(this.getDOMNode(), {attributes: true, childList: true, characterData: true, subtree: true});
-    }
-  },
-
-  componentWillUnmount: function() {
-    this.observer_ && this.observer_.disconnect();
-    this.observer_ = null;
-  },
-
   render: function() {
     var transform = 'translate3d(0px, ' + this.props.offsetTop + 'px, 0px)';
 
@@ -28884,14 +28881,6 @@ var ItemWrapper = React.createClass({displayName: 'ItemWrapper',
 
   handleWheel: function(e) {
     this.props.onWheel(this.props.index, e);
-  },
-
-  handleMutations: function(ms) {
-    ms.forEach(this.handleMutation);
-  },
-
-  handleMutation: function(m) {
-    this.props.onMutate(this.props.index);
   }
 });
 

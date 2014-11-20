@@ -10,7 +10,7 @@ function generateItems(count) {
     items.push({
       id: i + 1,
       name: chance.sentence({words: chance.natural({min: 1, max: 40})}),
-      height: 21
+      height: chance.natural({min: 10, max: 200})
     });
   }
   return items;
@@ -23,7 +23,7 @@ var DemoItem = React.createClass({
 
   componentDidMount: function() {
     this.isMounted() && chance.bool() && this.setState({
-      interval: setInterval(this.update, chance.natural({min: 500, max: 15000}))
+      interval: setInterval(this.update, chance.natural({min: 200, max: 1000}))
     });
   },
 
@@ -32,7 +32,8 @@ var DemoItem = React.createClass({
   },
 
   update: function() {
-    var height = Math.min(this.props.item.height + 20, 300);
+    // var height = Math.min(this.props.item.height + 20, 300);
+    var height = chance.natural({min: 30, max: 100});
 
     if (height !== this.props.item.height && this.isMounted()) {
       this.props.item.height = height;
@@ -43,7 +44,6 @@ var DemoItem = React.createClass({
   render: function() {
     var item = this.props.item;
 
-        // <img src='1.gif' />
     return (
       <div style={{height: item.height}}>
         <div>{item.id}</div>
@@ -58,12 +58,12 @@ var DemoList = React.createClass({
   },
 
   componentDidMount: function() {
-    // setInterval(this.update, 2000);
+    setInterval(this.update, 2000);
   },
 
   update: function() {
     this.setState({
-      count: chance.natural({min: 20, max: 80}),
+      count: chance.natural({min: 20, max: 3000}),
       renders: this.state.renders + 1
     });
   },

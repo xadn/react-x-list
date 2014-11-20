@@ -43,6 +43,16 @@ var List = React.createClass({
           props: this.props,
           state: this.state,
           stateChanges: {}})));
+
+    if (this.isMounted()) {
+      this.observer_ = new MutationObserver(this.handleMutations);
+      this.observer_.observe(this.getDOMNode(), {attributes: true, childList: true, characterData: true, subtree: true});
+    }
+  },
+
+  componentWillUnmount: function() {
+    this.observer_ && this.observer_.disconnect();
+    this.observer_ = null;
   },
 
   componentWillUpdate: function() {
@@ -85,7 +95,7 @@ var List = React.createClass({
     this.setStateIfChanged({stateChanges: {lastScrolled: index, isScrollingUp: e.deltaY < 0}});
   },
 
-  handleMutate: function(index) {
+  handleMutations: function() {
     this.setStateIfChanged(
       this.calculateVisibility(
         this.getMetrics(
@@ -96,22 +106,22 @@ var List = React.createClass({
   },
 
   shouldComponentUpdate: function(nextProps, nextState) {
-    var shouldUpdate = this.state.firstVisible !== nextState.firstVisible ||
+    return this.state.firstVisible !== nextState.firstVisible ||
            this.state.lastVisible  !== nextState.lastVisible  ||
            this.state.lastScrolled !== nextState.lastScrolled ||
            !Utils.areArraysEqual(this.state.heightOf, nextState.heightOf) ||
            !_.isEqual(this.state.keyToIndex, nextState.keyToIndex);
 
-    if (shouldUpdate) {
-      safety++;
-      if (safety > 50) {
-        throw new Error('too many renders in a row')
-      }
-    } else {
-      safety = 0;
-    }
+    // if (shouldUpdate) {
+    //   safety++;
+    //   if (safety > 50) {
+    //     throw new Error('too many renders in a row')
+    //   }
+    // } else {
+    //   safety = 0;
+    // }
 
-    return shouldUpdate;
+    // return shouldUpdate;
   },
 
   render: function() {
@@ -154,7 +164,6 @@ var List = React.createClass({
         ref={key}
         index={index}
         onWheel={this.handleWheel}
-        onMutate={this.handleMutate}
         offsetTop={this.state.topOf[index]}
         visible={this.state.heightOf[index] !== this.props.defaultHeight}>
         {child}
