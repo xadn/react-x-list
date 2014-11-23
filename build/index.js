@@ -62,7 +62,7 @@ var DynamicListDemo = React.createClass({displayName: 'DynamicListDemo',
   },
 
   componentDidMount: function() {
-    // setInterval(this.update, 5000);
+    setInterval(this.update, 5000);
   },
 
   update: function() {
@@ -22166,8 +22166,8 @@ module.exports = ItemWrapper;
 
 },{"react/addons":4}],168:[function(require,module,exports){
 /** @jsx React.DOM */
-var React = require('react/addons');
-var EmptyList = require('./empty_list');
+var React      = require('react/addons');
+var EmptyList  = require('./empty_list');
 var FiniteList = require('./finite_list');
 
 var List = React.createClass({displayName: 'List',

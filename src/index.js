@@ -61,7 +61,7 @@ var DynamicListDemo = React.createClass({
   },
 
   componentDidMount: function() {
-    // setInterval(this.update, 5000);
+    setInterval(this.update, 5000);
   },
 
   update: function() {

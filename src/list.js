@@ -1,6 +1,6 @@
 /** @jsx React.DOM */
-var React = require('react/addons');
-var EmptyList = require('./empty_list');
+var React      = require('react/addons');
+var EmptyList  = require('./empty_list');
 var FiniteList = require('./finite_list');
 
 var List = React.createClass({
