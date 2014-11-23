@@ -125,7 +125,7 @@ var List = React.createClass({
       visibleChildren[0] = this.wrapChild(lastScrolled, true);
       index = 1;
     } else if (this.props.children.length > lastScrolled && lastScrolled > lastVisible) {
-      visibleChildren[length - 1] = this.wrapChild(lastScrolled);
+      visibleChildren[length - 1] = this.wrapChild(lastScrolled, true);
     }
 
     while (child <= lastVisible) {
