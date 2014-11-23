@@ -13,7 +13,7 @@ var List = React.createClass({
 
   getInitialState: function() {
     return {
-      isScrollingUp: true,
+      isScrollingUp: false,
       lastScrolled: -1,
       firstVisible:  0,
       lastVisible:   0,
@@ -100,7 +100,8 @@ var List = React.createClass({
   },
 
   handleWheel: function(index, e) {
-    this.setStateIfChanged({stateChanges: {lastScrolled: index, isScrollingUp: e.deltaY < 0}});
+    this.setStateIfChanged({
+      stateChanges: {lastScrolled: index, isScrollingUp: e.deltaY < 0}});
   },
 
   shouldComponentUpdate: function(nextProps, nextState) {
@@ -174,9 +175,13 @@ var List = React.createClass({
   },
 
   fixScrollPosition: function(params) {
-    if (this.state.isScrollingUp) {
-      var node = this.getDOMNode();
-      var newScrollTop = this.state.scrollTop + (node.scrollHeight - this.state.scrollHeight);
+    var node               = this.getDOMNode();
+    var isScrolledToTop    = params.state.scrollTop === 0;
+    var isScrolledToBottom = params.state.scrollTop + node.offsetHeight >= params.state.scrollHeight;
+    var fixToBottom        = !isScrolledToTop && (isScrolledToBottom || params.state.isScrollingUp);
+
+    if (fixToBottom) {
+      var newScrollTop = params.state.scrollTop + (node.scrollHeight - params.state.scrollHeight);
 
       if (node.scrollTop !== newScrollTop) {
         node.scrollTop = newScrollTop;
@@ -199,6 +204,7 @@ var List = React.createClass({
     var node          = this.getDOMNode();
     var viewportStart = node.scrollTop;
     var viewportEnd   = viewportStart + node.offsetHeight;
+
     params.stateChanges.scrollHeight = node.scrollHeight;
     params.stateChanges.scrollTop    = viewportStart;
     params.stateChanges.firstVisible = Utils.binarySearch(topOf, viewportStart);

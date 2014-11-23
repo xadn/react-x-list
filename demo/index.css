@@ -3,7 +3,7 @@ html {
 }
 
 .is-list-container {
-  height: 650px;
+  height: 90vh;
   overflow-y: scroll;
   background-color: #AAA;
   padding: 0;
