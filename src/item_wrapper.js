@@ -11,6 +11,10 @@ var ItemWrapper = React.createClass({
       opacity: this.props.visible ? 1 : 0
     };
 
+    if (this.props.fixedHeight) {
+      style['height'] = 20;
+    }
+
     return (
       <li className='is-item' style={style} onWheel={this.handleWheel}>
         {this.props.children}
