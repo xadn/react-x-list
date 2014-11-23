@@ -21792,7 +21792,9 @@ var Utils         = require('./utils');
 
 var List = React.createClass({displayName: 'List',
   getDefaultProps: function() {
-    return {defaultHeight: 20};
+    return {
+      defaultHeight: 20
+    };
   },
 
   getInitialState: function() {
@@ -21840,9 +21842,9 @@ var List = React.createClass({displayName: 'List',
   componentWillUpdate: function() {
     this.setStateIfChanged(
       this.getScroll({
-          props: this.props,
-          state: this.state,
-          stateChanges: {}}));
+        props: this.props,
+        state: this.state,
+        stateChanges: {}}));
   },
 
   componentWillReceiveProps: function(nextProps) {
@@ -21860,9 +21862,9 @@ var List = React.createClass({displayName: 'List',
       this.calculateVisibility(
         this.getMetrics(
           this.fixScrollPosition({
-          props: this.props,
-          state: this.state,
-          stateChanges: {}}))));
+            props: this.props,
+            state: this.state,
+            stateChanges: {}}))));
   },
 
   handleMutations: function() {
@@ -21870,17 +21872,17 @@ var List = React.createClass({displayName: 'List',
       this.calculateVisibility(
         this.getMetrics(
           this.fixScrollPosition({
-          props: this.props,
-          state: this.state,
-          stateChanges: {}}))));
+            props: this.props,
+            state: this.state,
+            stateChanges: {}}))));
   },
 
   handleScroll: function() {
     this.setStateIfChanged(
       this.calculateVisibility({
-          props: this.props,
-          state: this.state,
-          stateChanges: {}}));
+        props: this.props,
+        state: this.state,
+        stateChanges: {}}));
   },
 
   handleWheel: function(index, e) {
@@ -22062,7 +22064,7 @@ var List = React.createClass({displayName: 'List',
     var heightOf     = new Uint32Array(len);
     var topOf        = new Uint32Array(len);
     var runningTotal = 0;
-    var child = 0;
+    var child        = 0;
 
     while (child < firstChanged) {
       var height      = prevHeightOf[child];
