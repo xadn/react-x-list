@@ -4,7 +4,7 @@ var ListContainer = require('./list_container');
 var ItemWrapper   = require('./item_wrapper');
 var Utils         = require('./utils');
 
-var List = React.createClass({
+var PopulatedList = React.createClass({
   getDefaultProps: function() {
     return {
       defaultHeight: 20
@@ -113,6 +113,7 @@ var List = React.createClass({
   },
 
   render: function() {
+    console.log('populated render!')
     var firstVisible = this.state.firstVisible;
     var lastVisible = this.state.lastVisible;
     var lastScrolled = this.state.lastScrolled;
@@ -345,4 +346,4 @@ var List = React.createClass({
   }
 });
 
-module.exports = List;
+module.exports = PopulatedList;

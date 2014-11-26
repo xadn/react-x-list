@@ -1,8 +1,8 @@
 /** @jsx React.DOM */
-var React      = require('react/addons');
-var FiniteList = require('./list');
-var Chance     = require('chance');
-var chance     = new Chance();
+var React  = require('react/addons');
+var XList  = require('./x_list');
+var Chance = require('chance');
+var chance = new Chance();
 
 function generateItems(count) {
   var items = [];
@@ -76,11 +76,11 @@ var DynamicListDemo = React.createClass({
 
     return (
       <div>
-        <FiniteList>
+        <XList>
           {generateItems(state.count).map(function(item) {
             return <DynamicListDemoItem key={state.renders + '-' + item.id} item={item} />;
           })}
-        </FiniteList>
+        </XList>
       </div>
     );
   }
@@ -105,11 +105,11 @@ var StaticListDemo = React.createClass({
   render: function() {
     return (
       <div>
-        <FiniteList>
+        <XList>
           {generateItems(5000).map(function(item) {
             return <StaticListDemoItem key={item.id} item={item} />;
           })}
-        </FiniteList>
+        </XList>
       </div>
     );
   }
