@@ -113,7 +113,6 @@ var PopulatedList = React.createClass({
   },
 
   render: function() {
-    console.log('populated render!')
     var firstVisible = this.state.firstVisible;
     var lastVisible = this.state.lastVisible;
     var lastScrolled = this.state.lastScrolled;

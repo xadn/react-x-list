@@ -7,12 +7,15 @@ var XList = React.createClass({
   displayName: 'XList',
 
   render: function() {
-    var children = [].concat(this.props.children);
+    var children = this.props.children;
 
-    if (children.length > 0) {
-      return <PopulatedList {...this.props} />
+    if (Array.isArray(children) && children.length > 0) {
+      return React.createElement(PopulatedList, this.props);
     }
-    return <EmptyList {...this.props} />
+    if (children) {
+      return React.createElement(PopulatedList, this.props, [children]);
+    }
+    return React.createElement(EmptyList, this.props);
   }
 });
 

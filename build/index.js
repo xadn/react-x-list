@@ -22241,10 +22241,15 @@ var XList = React.createClass({
   displayName: 'XList',
 
   render: function() {
-    if (this.props.children.length > 0) {
-      return React.createElement(PopulatedList, React.__spread({},  this.props))
+    var children = this.props.children;
+
+    if (Array.isArray(children) && children.length > 0) {
+      return React.createElement(PopulatedList, this.props);
     }
-    return React.createElement(EmptyList, React.__spread({},  this.props))
+    if (children) {
+      return React.createElement(PopulatedList, this.props, [children]);
+    }
+    return React.createElement(EmptyList, this.props);
   }
 });
 

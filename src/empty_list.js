@@ -4,7 +4,6 @@ var ListContainer = require('./list_container');
 
 var EmptyList = React.createClass({
   render: function() {
-    console.log('empty render!')
     return <ListContainer style={{height: 0}} />;
   }
 });

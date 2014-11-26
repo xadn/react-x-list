@@ -35,7 +35,7 @@ describe('XList', function() {
     });
   });
 
-  xdescribe('1 item', function() {
+  describe('1 item', function() {
     beforeEach(function() {
       React.render(
         React.createElement(XList, null,
