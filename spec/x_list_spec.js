@@ -14,7 +14,7 @@ describe('XList', function() {
 
     Item = React.createClass({
       render: function() {
-        return React.createElement('div', {className: 'item'}, 'Dummy Item');
+        return React.createElement('div', {className: 'item', style: {height: 20}}, 'Dummy Item');
       }
     });
   });
@@ -26,7 +26,9 @@ describe('XList', function() {
   describe('0 items', function() {
     beforeEach(function() {
       React.render(
-        React.createElement(XList)
+        React.createElement('div', {style: {height: 100}},
+          React.createElement(XList)
+        )
       , $node.get(0));
     });
 
@@ -38,8 +40,10 @@ describe('XList', function() {
   describe('1 item', function() {
     beforeEach(function() {
       React.render(
-        React.createElement(XList, null,
-          React.createElement(Item, {key: 1})
+        React.createElement('div', {style: {height: 100}},
+          React.createElement(XList, null,
+            React.createElement(Item, {key: 1})
+          )
         )
       , $node.get(0));
     });
@@ -53,12 +57,14 @@ describe('XList', function() {
     });
   });
 
-  describe('2+ items', function() {
+  describe('a small list', function() {
     beforeEach(function() {
       React.render(
-        React.createElement(XList, null,
-          React.createElement(Item, {key: 1}),
-          React.createElement(Item, {key: 2})
+        React.createElement('div', {style: {height: 100}},
+          React.createElement(XList, null,
+            React.createElement(Item, {key: 1}),
+            React.createElement(Item, {key: 2})
+          )
         )
       , $node.get(0));
     });
@@ -72,10 +78,41 @@ describe('XList', function() {
     });
   });
 
+  describe('a large list', function() {
+    beforeEach(function() {
+      React.render(
+        React.createElement('div', {style: {height: 100}},
+          React.createElement(XList, null,
+            React.createElement(Item, {key: 1}),
+            React.createElement(Item, {key: 2}),
+            React.createElement(Item, {key: 3}),
+            React.createElement(Item, {key: 4}),
+            React.createElement(Item, {key: 5}),
+            React.createElement(Item, {key: 6}),
+            React.createElement(Item, {key: 7}),
+            React.createElement(Item, {key: 8}),
+            React.createElement(Item, {key: 9}),
+            React.createElement(Item, {key: 10})
+          )
+        )
+      , $node.get(0));
+    });
+
+    it('creates an unordered list', function() {
+      expect($('ul').length).toEqual(1);
+    });
+
+    it('renders the visible items', function() {
+      expect($('ul .item').length).toBeLessThan(10);
+    });
+  });
+
   function $(selector) {
     return $node.find(selector);
   }
 });
+
+
 // describe('#model', function () {
 //   var model;
 

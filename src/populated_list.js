@@ -136,7 +136,7 @@ var PopulatedList = React.createClass({
     }
 
     return (
-      <ListContainer onScroll={this.handleScroll} style={{height: this.totalHeight()}}>
+      <ListContainer onScroll={this.handleScroll} scrollHeight={this.totalHeight()}>
         {visibleChildren}
       </ListContainer>
     );

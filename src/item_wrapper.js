@@ -6,13 +6,14 @@ var ItemWrapper = React.createClass({
     var transform = 'translate3d(0px, ' + this.props.offsetTop + 'px, 0px)';
 
     var style = {
+      position: 'absolute',
+      opacity: this.props.visible ? 1 : 0,
       WebkitTransform: transform,
-      transform: transform,
-      opacity: this.props.visible ? 1 : 0
+      transform: transform
     };
 
     if (this.props.fixedHeight) {
-      style['height'] = 20;
+      style.height = 20;
     }
 
     return (

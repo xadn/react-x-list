@@ -21777,7 +21777,7 @@ var ListContainer = require('./list_container');
 
 var EmptyList = React.createClass({displayName: 'EmptyList',
   render: function() {
-    return React.createElement(ListContainer, {style: {height: 0}});
+    return React.createElement(ListContainer, {scrollHeight: 0});
   }
 });
 
@@ -21792,13 +21792,14 @@ var ItemWrapper = React.createClass({displayName: 'ItemWrapper',
     var transform = 'translate3d(0px, ' + this.props.offsetTop + 'px, 0px)';
 
     var style = {
+      position: 'absolute',
+      opacity: this.props.visible ? 1 : 0,
       WebkitTransform: transform,
-      transform: transform,
-      opacity: this.props.visible ? 1 : 0
+      transform: transform
     };
 
     if (this.props.fixedHeight) {
-      style['height'] = 20;
+      style.height = 20;
     }
 
     return (
@@ -21821,9 +21822,24 @@ var React = require('react/addons');
 
 var ListContainer = React.createClass({displayName: 'ListContainer',
   render: function() {
+    var outerStyle = {
+      // overflowY: 'scroll',
+      // padding: 0,
+      // width: 300,
+      height: '100%'
+    };
+
+    var innerStyle = {
+      position: 'relative',
+      margin: 0,
+      padding: 0,
+      willChange: 'transform',
+      height: this.props.scrollHeight
+    };
+
     return (
-      React.createElement("div", {className: "is-list-container", onScroll: this.props.onScroll}, 
-        React.createElement("ul", {className: "is-list", style: this.props.style}, 
+      React.createElement("div", {className: "is-list-container", style: outerStyle, onScroll: this.props.onScroll}, 
+        React.createElement("ul", {className: "is-list", style: innerStyle}, 
           this.props.children
         )
       )
@@ -21972,7 +21988,7 @@ var PopulatedList = React.createClass({displayName: 'PopulatedList',
     }
 
     return (
-      React.createElement(ListContainer, {onScroll: this.handleScroll, style: {height: this.totalHeight()}}, 
+      React.createElement(ListContainer, {onScroll: this.handleScroll, scrollHeight: this.totalHeight()}, 
         visibleChildren
       )
     );
