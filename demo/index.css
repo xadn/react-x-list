@@ -2,7 +2,7 @@ html {
   font: 12px Helvetica, sans-serif;
 }
 
-.is-list-container {
+.x-list {
   height: 90vh;
   overflow-y: scroll;
   background-color: #AAA;
@@ -10,24 +10,14 @@ html {
   width: 300px;
 }
 
-.is-list {
+.x-list-inner {
   position: relative;
   margin: 0;
   padding: 0;
   will-change: transform;
 }
 
-.is-item {
+.x-list-item {
   border-bottom: solid 1px;
   width: 100%;
-}
-
-.is-highlight {
-  background-color: yellow;
-}
-
-.is-debug-info {
-  position: fixed;
-  top: 680px;
-  font-size: 14px;
 }

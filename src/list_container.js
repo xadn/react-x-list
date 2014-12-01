@@ -17,8 +17,8 @@ var ListContainer = React.createClass({
     outerStyle.width = 300;
 
     return (
-      <div className='is-list-container' style={outerStyle} onScroll={this.props.onScroll}>
-        <ul className='is-list' style={innerStyle}>
+      <div className='x-list' style={outerStyle} onScroll={this.props.onScroll}>
+        <ul className='x-list-inner' style={innerStyle}>
           {this.props.children}
         </ul>
       </div>

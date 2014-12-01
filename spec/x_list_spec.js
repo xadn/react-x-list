@@ -1,12 +1,14 @@
 var XList = require('../src/x_list');
 var React = require('react/addons');
-var simulateScroll = React.addons.TestUtils.Simulate.scroll;
-var simulateWheel  = React.addons.TestUtils.Simulate.wheel;
+// var simulateScroll = React.addons.TestUtils.Simulate.scroll;
+// var simulateWheel  = React.addons.TestUtils.Simulate.wheel;
 
 describe('XList', function() {
   var node;
 
   beforeEach(function() {
+    jasmine.addMatchers(require('./custom_matchers'));
+
     node = document.createElement('div');
     document.body.appendChild(node);
   });
@@ -79,27 +81,75 @@ describe('XList', function() {
 
     itRendersAList();
 
+    it('is scrolled to the top', function() {
+      expect(outerList().scrollTop).toEqual(0);
+    });
+
     it('is the full height', function() {
       expect($$('ul').offsetHeight).toEqual(240);
     });
 
     describe('scrolled to the top', function() {
+      itRendersItems(1, 2, 3, 4, 5, 6);
+    });
+
+    describe('scrolled to the second item', function() {
       beforeEach(function() {
-        expect(outerList().scrollTop).toEqual(0);
+        simulateScroll(20);
       });
 
-      itRendersItems(1, 2, 3, 4, 5, 6);
+      it('includes onscreen items', function() {
+        expect(2).toBeRendered();
+        expect(3).toBeRendered();
+        expect(4).toBeRendered();
+        expect(5).toBeRendered();
+        expect(6).toBeRendered();
+        expect(7).toBeRendered();
+      });
+
+      it('positions the items', function() {
+        expect(2).toHaveTransform({y: 20});
+        expect(3).toHaveTransform({y: 40});
+        expect(4).toHaveTransform({y: 60});
+        expect(5).toHaveTransform({y: 80});
+        expect(6).toHaveTransform({y: 100});
+        expect(7).toHaveTransform({y: 120});
+      });
+
+      it('excludes offscreen items', function() {
+        expect(1).not.toBeRendered();
+        expect(8).not.toBeRendered();
+        expect(9).not.toBeRendered();
+        expect(10).not.toBeRendered();
+        expect(11).not.toBeRendered();
+        expect(12).not.toBeRendered();
+      });
     });
 
     describe('scrolled to the bottom', function() {
       beforeEach(function() {
-        outerList().scrollTop = Number.MAX_SAFE_INTEGER
-        simulateScroll(outerList())
+        simulateScroll(140);
       });
+
+      // it('positions the items', function() {
+      //   expect(2).toHaveTransform({y: 20});
+      //   expect(3).toHaveTransform({y: 40});
+      //   expect(4).toHaveTransform({y: 60});
+      //   expect(5).toHaveTransform({y: 80});
+      //   expect(6).toHaveTransform({y: 100});
+      //   expect(7).toHaveTransform({y: 120});
+      // });
 
       itRendersItems(8, 9, 10, 11, 12);
     });
   });
+
+  function itPositionsItemAt(index, offset) {
+    it('positions item ' + index + ' at ' + offset, function() {
+      var yTransform = $li(index).style.transform.match(/translate3d\(0px, (\d+)px, 0px\)/)[1]
+      expect(Number(yTransform)).toEqual(offset);
+    });
+  }
 
   function itRendersAList() {
     it('renders a list', function() {
@@ -114,14 +164,22 @@ describe('XList', function() {
     });
   }
 
+  function itDoesNotRender() {
+    var args = Array.prototype.slice.call(arguments);
+
+    // it('does not render ' + args.join(', '), function() {
+    //   $i()
+    // });
+  }
+
   function i(index) {
     var Item = React.createClass({
       displayName: 'Item',
       render: function() {
         var attrs = {
-          'className':  'item',
+          'className': 'i-' + this.props.index,
           'data-index': this.props.index,
-          'style':      {height: 20}
+          'style':     {height: 20}
         };
         return React.createElement('div', attrs, 'I am an item');
       }
@@ -138,9 +196,31 @@ describe('XList', function() {
   }
 
   function renderedIndexes() {
-    return Array.prototype.map.call($('ul .item'), function(el) {
+    return Array.prototype.map.call($('ul > li > div'), function(el) {
       return Number(el.dataset.index);
     });
+  }
+
+  function simulateScroll(scrollTop) {
+    outerList().scrollTop = scrollTop;
+    expect(outerList().scrollTop).toEqual(scrollTop);
+    React.addons.TestUtils.Simulate.scroll(outerList());
+  }
+
+  function innerList() {
+    return $$('.x-list-inner');
+  }
+
+  function outerList() {
+    return $$('.x-list');
+  }
+
+  function $li(index) {
+    return $i(index) ? $i(index).parentElement : void 0;
+  }
+
+  function $i(index) {
+    return $('[data-index="'+ index + '"]')[0];
   }
 
   function $(selector) {
@@ -151,61 +231,4 @@ describe('XList', function() {
     expect(node.querySelectorAll(selector).length).toEqual(1);
     return node.querySelector(selector);
   }
-
-  function innerList() {
-    return $$('.is-list');
-  }
-
-  function outerList() {
-    return $$('.is-list-container');
-  }
 });
-
-
-// describe('#model', function () {
-//   var model;
-
-//   beforeEach(function() {
-//     model = new List(10, 10);
-//   });
-
-//   it('calculates the totalHeight', function () {
-//     expect(model.totalHeight()).toEqual(100);
-//   });
-
-//   describe("#indexOfViewportTop", function() {
-//     it("finds the first index when the viewport is at the top", function() {
-//       expect(model.indexOfViewportTop(0)).toEqual(0);
-//     });
-
-//     it("finds the first index when the viewport is near the top", function() {
-//       expect(model.indexOfViewportTop(1)).toEqual(0);
-//     });
-
-//     it("finds the second to last index when the viewport is at the bottom", function() {
-//       expect(model.indexOfViewportTop(100)).toEqual(8);
-//     });
-
-//     it("finds the second to last index when the viewport is near the bottom", function() {
-//       expect(model.indexOfViewportTop(99)).toEqual(8);
-//     });
-
-//     it("finds the middle index when the viewport is at the middle", function() {
-//       expect(model.indexOfViewportTop(50)).toEqual(5);
-//     });
-//   });
-
-//   describe("#indexOfViewportBottom", function() {
-//     it("finds the second to first index when the viewport is at the top", function() {
-//       expect(model.indexOfViewportBottom(0, 0)).toEqual(1);
-//     });
-
-//     it("finds the last index when the viewport is at the bottom", function() {
-//       expect(model.indexOfViewportBottom(100, 0)).toEqual(9);
-//     });
-
-//     it("finds the middle index when the viewport is at the middle", function() {
-//       expect(model.indexOfViewportBottom(50, 0)).toEqual(4);
-//     });
-//   });
-// });
