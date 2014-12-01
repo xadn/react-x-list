@@ -57,7 +57,7 @@ var DynamicListDemoItem = React.createClass({
 
 var DynamicListDemo = React.createClass({
   getInitialState: function() {
-    return {count: 50, renders: 0};
+    return {count: 0, renders: 0};
   },
 
   componentDidMount: function() {

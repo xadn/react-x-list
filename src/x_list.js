@@ -9,13 +9,19 @@ var XList = React.createClass({
   render: function() {
     var children = this.props.children;
 
-    if (Array.isArray(children) && children.length > 0) {
-      return React.createElement(PopulatedList, this.props);
+    if (Array.isArray(children)) {
+      if (children.length) {
+        return React.createElement(PopulatedList, this.props);
+      } else {
+        return React.createElement(EmptyList, this.props);
+      }
+    } else {
+      if (children) {
+        return React.createElement(PopulatedList, this.props, [children]);
+      } else {
+        return React.createElement(EmptyList, this.props);
+      }
     }
-    if (children) {
-      return React.createElement(PopulatedList, this.props, [children]);
-    }
-    return React.createElement(EmptyList, this.props);
   }
 });
 

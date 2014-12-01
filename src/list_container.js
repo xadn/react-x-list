@@ -4,15 +4,20 @@ var React = require('react/addons');
 var ListContainer = React.createClass({
   render: function() {
     var innerStyle = {
+      height: this.props.scrollHeight,
+      overflowY: 'scroll',
       position: 'relative',
-      margin: 0,
-      padding: 0,
       willChange: 'transform',
-      height: this.props.scrollHeight
+      margin: 0,
+      padding: 0
     };
 
+    var outerStyle = this.props.style || {};
+    outerStyle.overflowY = 'scroll';
+    outerStyle.width = 300;
+
     return (
-      <div className='is-list-container' style={this.props.style} onScroll={this.props.onScroll}>
+      <div className='is-list-container' style={outerStyle} onScroll={this.props.onScroll}>
         <ul className='is-list' style={innerStyle}>
           {this.props.children}
         </ul>

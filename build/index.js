@@ -58,7 +58,7 @@ var DynamicListDemoItem = React.createClass({displayName: 'DynamicListDemoItem',
 
 var DynamicListDemo = React.createClass({displayName: 'DynamicListDemo',
   getInitialState: function() {
-    return {count: 50, renders: 0};
+    return {count: 0, renders: 0};
   },
 
   componentDidMount: function() {
@@ -21823,15 +21823,20 @@ var React = require('react/addons');
 var ListContainer = React.createClass({displayName: 'ListContainer',
   render: function() {
     var innerStyle = {
+      height: this.props.scrollHeight,
+      overflowY: 'scroll',
       position: 'relative',
-      margin: 0,
-      padding: 0,
       willChange: 'transform',
-      height: this.props.scrollHeight
+      margin: 0,
+      padding: 0
     };
 
+    var outerStyle = this.props.style || {};
+    outerStyle.overflowY = 'scroll';
+    outerStyle.width = 300;
+
     return (
-      React.createElement("div", {className: "is-list-container", style: this.props.style, onScroll: this.props.onScroll}, 
+      React.createElement("div", {className: "is-list-container", style: outerStyle, onScroll: this.props.onScroll}, 
         React.createElement("ul", {className: "is-list", style: innerStyle}, 
           this.props.children
         )
@@ -21981,7 +21986,7 @@ var PopulatedList = React.createClass({displayName: 'PopulatedList',
     }
 
     return (
-      React.createElement(ListContainer, {onScroll: this.handleScroll, scrollHeight: this.totalHeight()}, 
+      React.createElement(ListContainer, {onScroll: this.handleScroll, scrollHeight: this.totalHeight(), style: this.props.style}, 
         visibleChildren
       )
     );
@@ -22252,13 +22257,19 @@ var XList = React.createClass({
   render: function() {
     var children = this.props.children;
 
-    if (Array.isArray(children) && children.length > 0) {
-      return React.createElement(PopulatedList, this.props);
+    if (Array.isArray(children)) {
+      if (children.length) {
+        return React.createElement(PopulatedList, this.props);
+      } else {
+        return React.createElement(EmptyList, this.props);
+      }
+    } else {
+      if (children) {
+        return React.createElement(PopulatedList, this.props, [children]);
+      } else {
+        return React.createElement(EmptyList, this.props);
+      }
     }
-    if (children) {
-      return React.createElement(PopulatedList, this.props, [children]);
-    }
-    return React.createElement(EmptyList, this.props);
   }
 });
 
