@@ -17,7 +17,7 @@ var ItemWrapper = React.createClass({
     }
 
     return (
-      <li className='is-item' style={style} onWheel={this.handleWheel}>
+      <li className='x-list-item' style={style} onWheel={this.handleWheel}>
         {this.props.children}
       </li>
     );
