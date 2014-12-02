@@ -21803,7 +21803,7 @@ var ItemWrapper = React.createClass({displayName: 'ItemWrapper',
     }
 
     return (
-      React.createElement("li", {className: "is-item", style: style, onWheel: this.handleWheel}, 
+      React.createElement("li", {className: "x-list-item", style: style, onWheel: this.handleWheel}, 
         this.props.children
       )
     );
@@ -21836,8 +21836,8 @@ var ListContainer = React.createClass({displayName: 'ListContainer',
     outerStyle.width = 300;
 
     return (
-      React.createElement("div", {className: "is-list-container", style: outerStyle, onScroll: this.props.onScroll}, 
-        React.createElement("ul", {className: "is-list", style: innerStyle}, 
+      React.createElement("div", {className: "x-list", style: outerStyle, onScroll: this.props.onScroll}, 
+        React.createElement("ul", {className: "x-list-inner", style: innerStyle}, 
           this.props.children
         )
       )
@@ -22254,20 +22254,27 @@ var PopulatedList = require('./populated_list');
 var XList = React.createClass({
   displayName: 'XList',
 
+  getDefaultProps: function() {
+    return {
+      EmptyList: EmptyList,
+      PopulatedList: PopulatedList
+    };
+  },
+
   render: function() {
     var children = this.props.children;
 
     if (Array.isArray(children)) {
       if (children.length) {
-        return React.createElement(PopulatedList, this.props);
+        return React.createElement(this.props.PopulatedList, this.props);
       } else {
-        return React.createElement(EmptyList, this.props);
+        return React.createElement(this.props.EmptyList, this.props);
       }
     } else {
       if (children) {
-        return React.createElement(PopulatedList, this.props, [children]);
+        return React.createElement(this.props.PopulatedList, this.props, [children]);
       } else {
-        return React.createElement(EmptyList, this.props);
+        return React.createElement(this.props.EmptyList, this.props);
       }
     }
   }
