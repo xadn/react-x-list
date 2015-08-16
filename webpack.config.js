@@ -1,10 +1,10 @@
 module.exports = {
   entry: {
-    demo: './demo/index.js'
+    demo: './demo/Demo.js'
   },
   output: {
     path: __dirname,
-    filename: '[name].js'
+    filename: 'demo/build.js'
   },
   module: {
     loaders: [
@@ -12,14 +12,3 @@ module.exports = {
     ]
   }
 };
-
-// module.exports = {
-//   entry: {
-//     app: ["./app/main.js"]
-//   },
-//   output: {
-//     path: "./build",
-//     publicPath: "/assets/",
-//     filename: "bundle.js"
-//   }
-// };
