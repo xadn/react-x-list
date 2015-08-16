@@ -4,7 +4,7 @@ module.exports = {
   },
   output: {
     path: __dirname,
-    filename: 'demo/build.js'
+    filename: 'demo/_dist.js'
   },
   module: {
     loaders: [
