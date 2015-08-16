@@ -16,17 +16,17 @@ const style = {
 
 };
 
-const items = Generator.items(100);
-
 const layout = (
   <div style={style.container}>
     <div style={style.panel}>
-      #1
+      <JumboList width={style.panel.width} height={style.panel.height}>
+        {Generator.items(1000)}
+      </JumboList>
     </div>
 
     <div style={style.panel}>
       <JumboList width={style.panel.width} height={style.panel.height}>
-        {items}
+        {Generator.items(10000)}
       </JumboList>
     </div>
   </div>
