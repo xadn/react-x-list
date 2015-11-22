@@ -1,4 +1,4 @@
-react-jumbo-list
+react-x-list
 ================
 
 So far, just a test
